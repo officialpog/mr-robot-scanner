@@ -237,7 +237,7 @@
 
   <script>
     const API = 'https://mr-robot-scanner-backend.onrender.com/api/v1';
-    const ADMIN_USER = 'pog'; // Your username for admin access
+    const ADMIN_USER = 'pog';
     let token = localStorage.getItem('t') || null;
     let user = localStorage.getItem('u') || null;
     let admin = localStorage.getItem('a') === '1';
@@ -252,6 +252,42 @@
     function toast(m,t='info'){const b=document.getElementById('toast');b.textContent='🤖 '+m;b.style.display='block';b.style.borderColor=t==='success'?'#2ecc71':t==='error'?'#e63946':'#f39c12';b.style.color=t==='success'?'#2ecc71':t==='error'?'#e63946':'#f39c12';setTimeout(()=>b.style.display='none',3000);}
     function term(t){const b=document.getElementById('terminalBody');const l=document.createElement('div');l.className='terminal-line';l.innerHTML=t;b.appendChild(l);b.scrollTop=b.scrollHeight;}
     function clearTerm(){document.getElementById('terminalBody').innerHTML='';}
+
+    // Update dashboard from scan result
+    function updateDashboardFromResult(r) {
+      const vulns = r.vulnerabilities || [];
+      const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+      vulns.forEach(v => { const s = (v.severity || 'low').toLowerCase(); if (counts[s] !== undefined) counts[s]++; });
+      
+      document.getElementById('criticalCount').textContent = counts.critical;
+      document.getElementById('highCount').textContent = counts.high;
+      document.getElementById('mediumCount').textContent = counts.medium;
+      document.getElementById('lowCount').textContent = counts.low;
+      
+      const ports = r.ports || [];
+      if (ports.length > 0) {
+        document.getElementById('portsList').innerHTML = ports.map(p => 
+          `<div class="port-item ${p.status}"><span>${p.port} <span style="color:#999;">${p.service}</span></span><span class="status-${p.status}">${p.status.toUpperCase()}</span></div>`
+        ).join('');
+      } else {
+        document.getElementById('portsList').innerHTML = '<p class="empty-state">No ports found</p>';
+      }
+      
+      const techs = r.technologies || [];
+      if (techs.length > 0) {
+        document.getElementById('techList').innerHTML = techs.map(t => 
+          `<span class="tech-tag">${t.name}${t.version ? ' ' + t.version : ''}</span>`
+        ).join('');
+      } else {
+        document.getElementById('techList').innerHTML = '<p class="empty-state">No technologies detected</p>';
+      }
+      
+      const total = counts.critical + counts.high + counts.medium + counts.low || 1;
+      document.getElementById('criticalBar').style.width = (counts.critical / total * 100) + '%';
+      document.getElementById('highBar').style.width = (counts.high / total * 100) + '%';
+      document.getElementById('mediumBar').style.width = (counts.medium / total * 100) + '%';
+      document.getElementById('lowBar').style.width = (counts.low / total * 100) + '%';
+    }
 
     async function refreshDashboard(){
       if(!token) return;
@@ -295,7 +331,7 @@
       try{
         const r=await fetch(`${API}/scan/${id}`);
         const d=await r.json();
-        if(r.ok){lastResult=d;showReport();}
+        if(r.ok){lastResult=d;updateDashboardFromResult(d);showReport();}
       }catch(e){toast('Failed to load scan','error');}
     }
 
@@ -334,7 +370,6 @@
         const d=await r.json();
         if(!r.ok){toast('Login failed: '+(d.detail||'Error'),'error');return;}
         token=d.access_token;user=d.username;
-        // Admin check: backend is_admin OR username is 'pog'
         admin = d.is_admin || d.username === ADMIN_USER;
         localStorage.setItem('t',token);localStorage.setItem('u',user);localStorage.setItem('a',admin?'1':'0');
         updateUI();closeAuthModal();toast(`Welcome, ${user}!${admin?' 👑':''}`,'success');
@@ -366,6 +401,7 @@
           const r=await fetch(`${API}/scan/${scanId}`);const d=await r.json();
           if(d.status==='completed'){
             clearInterval(pollInterval);lastResult=d;
+            updateDashboardFromResult(d); // UPDATE DASHBOARD WITH SCAN DATA
             term(`<span class="text-green">[✓]</span> Scan complete! Ports: ${d.ports?.length||0} | Vulns: ${d.vulnerabilities?.length||0}`);
             document.getElementById('reportActions').classList.add('visible');
             scanning=false;document.getElementById('scanButton').innerHTML='<i class="fas fa-skull"></i> Scan';
@@ -443,7 +479,7 @@
       });
     }
 
-    function showMyReports(){if(!token){toast('Login first','error');return;}if(lastResult){showReport();return;}if(scanHistory.length===0){toast('No scans yet','info');return;}lastResult=scanHistory[0];showReport();}
+    function showMyReports(){if(!token){toast('Login first','error');return;}if(lastResult){showReport();return;}if(scanHistory.length===0){toast('No scans yet','info');return;}const completed=scanHistory.filter(s=>s.status==='completed');if(completed.length===0){toast('No completed scans','info');return;}loadScanResult(completed[0].id);}
 
     async function showAdminPanel(){
       if(!admin){toast('Admin only','error');return;}
@@ -455,22 +491,22 @@
         document.getElementById('adminContent').innerHTML=`
           <span class="close-btn" onclick="document.getElementById('adminModal').classList.remove('active')">&times;</span>
           <h2>👑 ADMIN PANEL</h2>
-          <p style="color:#999;font-family:var(--font-mono);font-size:10px;">Logged in as: <strong style="color:#ffd700;">${user}</strong></p>
+          <p style="color:#999;font-family:var(--font-mono);font-size:10px;">Admin: <strong style="color:#ffd700;">${user}</strong></p>
           <div class="admin-stats"><div class="admin-stat"><div class="number">${users.length}</div><div class="label">Users</div></div><div class="admin-stat"><div class="number">${scans.length}</div><div class="label">Scans</div></div><div class="admin-stat"><div class="number">${scans.filter(s=>s.status==='running').length}</div><div class="label">Active</div></div><div class="admin-stat"><div class="number">${scans.reduce((a,s)=>a+(s.vulns_count||0),0)}</div><div class="label">Vulns</div></div></div>
           <h3 style="color:#ffd700;margin-top:15px;">👥 Users</h3>
-          <table class="admin-table"><tr><th>ID</th><th>Username</th><th>Email</th><th>Status</th><th>Scans</th><th>Actions</th></tr>${users.map(u=>`<tr><td>#${u.id}</td><td>${u.username} ${u.is_admin?'<span class="admin-badge admin">ADMIN</span>':''} ${u.username===ADMIN_USER?'<span class="admin-badge admin">YOU</span>':''}</td><td style="font-size:10px;">${u.email}</td><td><span class="admin-badge ${u.is_active?'active':'inactive'}">${u.is_active?'Active':'Off'}</span></td><td>${scans.filter(s=>s.user_id===u.id).length}</td><td>${u.username!==user?`<button class="admin-btn-sm danger" onclick="deleteUser(${u.id})">Del</button>`:'-'}</td></tr>`).join('')}</table>
+          <table class="admin-table"><tr><th>ID</th><th>Username</th><th>Email</th><th>Status</th><th>Scans</th><th>Actions</th></tr>${users.map(u=>`<tr><td>#${u.id}</td><td>${u.username} ${u.is_admin?'<span class="admin-badge admin">ADMIN</span>':''}</td><td style="font-size:10px;">${u.email}</td><td><span class="admin-badge ${u.is_active?'active':'inactive'}">${u.is_active?'Active':'Off'}</span></td><td>${scans.filter(s=>s.user_id===u.id).length}</td><td>${u.username!==user?`<button class="admin-btn-sm danger" onclick="deleteUser(${u.id})">Del</button>`:'-'}</td></tr>`).join('')}</table>
           <h3 style="color:#ffd700;margin-top:15px;">📊 Recent Scans</h3>
-          <table class="admin-table"><tr><th>ID</th><th>Target</th><th>User</th><th>Status</th><th>Risk</th><th>Date</th></tr>${scans.slice(0,10).map(s=>`<tr><td>#${s.id}</td><td>${s.target}</td><td style="color:#ffd700;">${users.find(u=>u.id===s.user_id)?.username||'?'}</td><td style="color:${s.status==='completed'?'#2ecc71':s.status==='failed'?'#e63946':'#f39c12'}">${s.status.toUpperCase()}</td><td style="color:${s.risk_score>50?'#e63946':'#2ecc71'}">${s.risk_score||0}/100</td><td style="font-size:9px;">${s.created_at?new Date(s.created_at).toLocaleDateString():'-'}</td></tr>`).join('')||'<tr><td colspan="6" style="color:#999;text-align:center;">No scans yet</td></tr>'}</table>
+          <table class="admin-table"><tr><th>ID</th><th>Target</th><th>User</th><th>Status</th><th>Risk</th></tr>${scans.slice(0,10).map(s=>`<tr><td>#${s.id}</td><td>${s.target}</td><td style="color:#ffd700;">${users.find(u=>u.id===s.user_id)?.username||'?'}</td><td style="color:${s.status==='completed'?'#2ecc71':'#f39c12'}">${s.status}</td><td style="color:${s.risk_score>50?'#e63946':'#2ecc71'}">${s.risk_score||0}</td></tr>`).join('')}</table>
         `;
-      }catch(e){document.getElementById('adminContent').innerHTML='<span class="close-btn" onclick="document.getElementById(\'adminModal\').classList.remove(\'active\')">&times;</span><h2>👑 ADMIN PANEL</h2><p style="color:#e63946;">Failed to load admin data. Check backend admin endpoints.</p>';}
+      }catch(e){document.getElementById('adminContent').innerHTML='<span class="close-btn" onclick="document.getElementById(\'adminModal\').classList.remove(\'active\')">&times;</span><h2>👑 ADMIN PANEL</h2><p style="color:#e63946;">Failed to load admin data.</p>';}
     }
 
     async function deleteUser(id){
-      if(!confirm('Delete this user and ALL their scans? This is irreversible!'))return;
+      if(!confirm('Delete this user and ALL scans?'))return;
       try{
         const r=await fetch(`${API}/admin/users/${id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});
-        if(r.ok){toast('User deleted!','success');showAdminPanel();}else{const d=await r.json();toast('Failed: '+(d.detail||'Error'),'error');}
-      }catch(e){toast('Error deleting user','error');}
+        if(r.ok){toast('User deleted','success');showAdminPanel();}else toast('Failed','error');
+      }catch(e){toast('Error','error');}
     }
 
     function scrollToSection(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});}
@@ -480,7 +516,7 @@
     document.getElementById('adminModal').addEventListener('click',e=>{if(e.target===document.getElementById('adminModal'))document.getElementById('adminModal').classList.remove('active');});
 
     updateUI();
-    console.log('%c🤖 Mr. Robot %c| %cAdmin: pog %c| %cDynamic Scanner', 'font-size:18px;', 'color:#e63946;', 'color:#ffd700;', 'color:#fff;', 'color:#2ecc71;');
+    console.log('%c🤖 Mr. Robot %c| %cDashboard Live %c| %cAdmin: pog', 'font-size:18px;', 'color:#e63946;', 'color:#2ecc71;', 'color:#fff;', 'color:#ffd700;');
   </script>
 </body>
 </html>
