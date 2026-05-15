@@ -34,13 +34,11 @@
     .btn-outline { border: 1px solid var(--accent-red); background: transparent; color: var(--accent-red); padding: 6px 16px; border-radius: 4px; font-family: var(--font-mono); font-weight: 600; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 11px; }
     .btn-outline:hover { background: var(--accent-red); color: #fff; }
     .user-info { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--accent-red); }
-
     .hero { margin-top: 30px; text-align: center; }
     .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(230,57,70,0.1); border: 1px solid rgba(230,57,70,0.3); padding: 5px 15px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--accent-red); margin-bottom: 15px; }
     .hero h1 { font-family: var(--font-display); font-size: 36px; font-weight: 900; letter-spacing: 2px; margin-bottom: 10px; }
     .hero h1 .highlight { color: var(--accent-red); text-shadow: 0 0 20px rgba(230,57,70,0.8); }
     .hero-quote { color: var(--text-muted); max-width: 500px; font-size: 13px; margin: 0 auto 20px; font-family: var(--font-mono); font-style: italic; border-left: 2px solid var(--accent-red); padding-left: 12px; }
-    
     .scan-box { display: none; max-width: 550px; margin: 0 auto 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; }
     .scan-box.visible { display: flex; }
     .scan-box input { flex: 1; background: transparent; border: none; padding: 14px 18px; font-size: 14px; color: #fff; font-family: var(--font-mono); outline: none; }
@@ -50,12 +48,10 @@
     .scan-btn:disabled { opacity: 0.5; }
     .scan-btn.scanning { background: #ff6b00; animation: scanPulse 1.5s ease-in-out infinite; }
     @keyframes scanPulse { 0%,100% { box-shadow: 0 0 15px rgba(255,107,0,0.4); } 50% { box-shadow: 0 0 30px rgba(255,107,0,0.8); } }
-    
     .scan-locked { max-width: 550px; margin: 0 auto 20px; padding: 25px; text-align: center; border: 2px dashed #e63946; border-radius: 8px; background: rgba(230,57,70,0.05); display: none; }
     .scan-locked.visible { display: block; }
     .scan-locked i { font-size: 40px; color: #e63946; margin-bottom: 10px; }
     .scan-locked p { font-family: var(--font-mono); color: var(--text-muted); font-size: 13px; margin: 8px 0; }
-
     .terminal-wrapper { max-width: 550px; margin: 0 auto 15px; display: none; }
     .terminal-wrapper.visible { display: block; }
     .terminal { background: #050505; border: 1px solid rgba(230,57,70,0.4); border-radius: 6px; overflow: hidden; }
@@ -66,21 +62,17 @@
     .terminal-body { padding: 15px; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; color: var(--accent-red); min-height: 80px; max-height: 250px; overflow-y: auto; }
     .prompt { color: var(--accent-red); font-weight: 600; }
     .text-red { color: #e63946; } .text-green { color: #2ecc71; } .text-yellow { color: #f39c12; } .text-gray { color: #999; } .text-white { color: #fff; }
-
     .report-actions { display: none; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 15px 0; }
     .report-actions.visible { display: flex; }
     .report-btn { padding: 8px 16px; border: 1px solid var(--accent-green); background: transparent; color: var(--accent-green); border-radius: 4px; font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
     .report-btn:hover { background: var(--accent-green); color: #000; }
-
     .section-header { display: flex; align-items: center; gap: 10px; margin: 30px 0 15px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
     .section-header::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(230,57,70,0.4), transparent); }
-    
     .risk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
     .risk-card { background: var(--bg-card); border-radius: 6px; padding: 18px 10px; text-align: center; border: 1px solid var(--border-color); }
     .risk-card i { font-size: 24px; margin-bottom: 5px; }
     .risk-card h3 { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
     .risk-count { font-size: 28px; font-weight: 700; font-family: var(--font-mono); }
-    
     .charts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
     .chart-card { background: var(--bg-card); border-radius: 6px; padding: 15px; border: 1px solid var(--border-color); }
     .chart-card h4 { font-family: var(--font-mono); font-size: 11px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--text-secondary); text-transform: uppercase; }
@@ -90,16 +82,12 @@
     .progress-bar { height: 4px; background: #1a1a1a; border-radius: 2px; margin: 6px 0; overflow: hidden; }
     .progress-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
     .tech-tag { display: inline-block; background: rgba(230,57,70,0.1); border: 1px solid rgba(230,57,70,0.3); padding: 3px 8px; border-radius: 3px; margin: 2px; font-size: 10px; font-family: var(--font-mono); }
-    
-    /* Scan History */
     .scan-history { margin-top: 20px; }
     .scan-history h4 { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; }
     .history-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--bg-card); border-radius: 4px; margin: 3px 0; font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s; }
     .history-item:hover { border-color: var(--accent-red); }
     .history-status { font-size: 10px; text-transform: uppercase; }
     .history-status.completed { color: #2ecc71; } .history-status.failed { color: #e63946; } .history-status.running { color: #f39c12; }
-
-    /* Modals */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; overflow-y: auto; padding: 20px; }
     .modal-overlay.active { display: flex; }
     .modal { background: var(--bg-card); border: 1px solid var(--accent-red); border-radius: 8px; padding: 25px; max-width: 400px; width: 100%; position: relative; }
@@ -109,7 +97,6 @@
     .modal button { width: 100%; padding: 12px; margin-top: 12px; background: var(--accent-red); border: none; border-radius: 4px; color: #fff; font-family: var(--font-mono); font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 13px; }
     .modal .switch-link { text-align: center; margin-top: 12px; color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; cursor: pointer; }
     .modal .close-btn { position: absolute; top: 12px; right: 12px; color: var(--text-muted); cursor: pointer; font-size: 18px; }
-
     .report-modal { background: #fff; color: #111; max-width: 700px; padding: 25px; }
     .report-modal h2 { color: #e63946; }
     .report-section { margin: 15px 0; }
@@ -124,7 +111,6 @@
     .severity-badge.high { background: #e76f51; color: #fff; }
     .severity-badge.medium { background: #f4a261; color: #000; }
     .severity-badge.low { background: #2a9d8f; color: #fff; }
-
     .admin-modal { background: #0a0a0a; color: #fff; border-color: #ffd700; max-width: 800px; }
     .admin-modal h2 { color: #ffd700; }
     .admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0; }
@@ -142,7 +128,6 @@
     .admin-btn-sm:hover { background: #ffd700; color: #000; }
     .admin-btn-sm.danger { border-color: #e63946; color: #e63946; }
     .admin-btn-sm.danger:hover { background: #e63946; color: #fff; }
-
     .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin: 15px 0; }
     .feature-item { display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: var(--bg-card); border-radius: 4px; border: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 11px; }
     .feature-item:hover { border-color: var(--accent-red); } .feature-item i { color: var(--accent-red); }
@@ -152,20 +137,13 @@
     .empty-state { color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; font-style: italic; text-align: center; padding: 15px; }
     .refresh-indicator { display: inline-block; width: 6px; height: 6px; background: #2ecc71; border-radius: 50%; animation: livePulse 2s ease-in-out infinite; margin-left: 5px; }
     @keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-    @media (max-width: 768px) {
-      .risk-grid { grid-template-columns: repeat(2, 1fr); }
-      .charts-grid { grid-template-columns: 1fr; }
-      .admin-stats { grid-template-columns: repeat(2, 1fr); }
-      .hero h1 { font-size: 24px; }
-    }
+    @media (max-width: 768px) { .risk-grid { grid-template-columns: repeat(2, 1fr); } .charts-grid { grid-template-columns: 1fr; } .admin-stats { grid-template-columns: repeat(2, 1fr); } .hero h1 { font-size: 24px; } }
   </style>
 </head>
 <body>
   <canvas id="matrix-bg"></canvas>
   <div id="toast" class="toast"></div>
   
-  <!-- Auth Modal -->
   <div class="modal-overlay" id="authModal">
     <div class="modal">
       <span class="close-btn" onclick="closeAuthModal()">&times;</span>
@@ -185,14 +163,10 @@
     </div>
   </div>
 
-  <!-- Report Modal -->
   <div class="modal-overlay" id="reportModal"><div class="modal report-modal" id="reportContent"></div></div>
-
-  <!-- Admin Modal -->
   <div class="modal-overlay" id="adminModal"><div class="modal admin-modal" id="adminContent"></div></div>
 
   <div class="container">
-    <!-- Navbar -->
     <nav class="navbar">
       <div class="logo"><span class="logo-emoji">🤖</span><span class="logo-text"><span class="mr">Mr.</span> Robot</span></div>
       <div class="nav-links">
@@ -206,27 +180,15 @@
       </div>
     </nav>
 
-    <!-- Hero / Scanner -->
     <div class="hero" id="scanner">
       <div class="hero-badge"><span class="refresh-indicator"></span> LIVE SYSTEM — v2.4.1</div>
       <h1><span class="highlight">MR. ROBOT</span> SCANNER</h1>
       <p class="hero-quote">"Control is an illusion. Security is dynamic."</p>
-
       <div class="scan-locked" id="scanLocked"><i class="fas fa-lock"></i><p><strong>Authentication Required</strong></p><p>Login to scan and view your dashboard</p><button class="btn-outline" onclick="openAuthModal()">Login / Register</button></div>
-      
-      <div class="scan-box" id="scanBox">
-        <input type="text" id="targetInput" placeholder="Enter target... (e.g., scanme.nmap.org)" autocomplete="off">
-        <button id="scanButton" class="scan-btn"><i class="fas fa-skull"></i> Scan</button>
-      </div>
-      
+      <div class="scan-box" id="scanBox"><input type="text" id="targetInput" placeholder="Enter target... (e.g., scanme.nmap.org)" autocomplete="off"><button id="scanButton" class="scan-btn"><i class="fas fa-skull"></i> Scan</button></div>
       <div id="scanInfo" style="display:none;text-align:center;font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin:5px 0;"><span id="scanTargetDisplay"></span> | <span id="scanTimer">0s</span></div>
       <div id="cancelBox" style="display:none;text-align:center;margin:5px 0;"><button onclick="cancelScan()" style="background:transparent;border:1px solid red;color:red;padding:6px 20px;font-family:var(--font-mono);cursor:pointer;font-size:11px;">CANCEL</button></div>
-      
-      <div class="report-actions" id="reportActions">
-        <button class="report-btn" onclick="showReport()">View Report</button>
-        <button class="report-btn" onclick="downloadPDF()">Download PDF</button>
-      </div>
-
+      <div class="report-actions" id="reportActions"><button class="report-btn" onclick="showReport()">View Report</button><button class="report-btn" onclick="downloadPDF()">Download PDF</button></div>
       <div class="terminal-wrapper" id="terminalWrapper">
         <div class="terminal">
           <div class="terminal-header"><span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span><span class="terminal-title">terminal</span></div>
@@ -235,7 +197,6 @@
       </div>
     </div>
 
-    <!-- Dynamic Dashboard -->
     <div class="section-header" id="dashboard"><i class="fas fa-chart-line"></i> Live Dashboard <span class="refresh-indicator"></span></div>
     <div class="risk-grid">
       <div class="risk-card"><i class="fas fa-skull" style="color:#e63946;"></i><h3>CRITICAL</h3><div class="risk-count text-red" id="criticalCount">0</div></div>
@@ -243,7 +204,6 @@
       <div class="risk-card"><i class="fas fa-exclamation-triangle" style="color:#f4a261;"></i><h3>MEDIUM</h3><div class="risk-count" style="color:#f4a261;" id="mediumCount">0</div></div>
       <div class="risk-card"><i class="fas fa-info-circle" style="color:#2a9d8f;"></i><h3>LOW</h3><div class="risk-count" style="color:#2a9d8f;" id="lowCount">0</div></div>
     </div>
-
     <div class="charts-grid">
       <div class="chart-card"><h4><i class="fas fa-plug" style="color:#e63946;"></i> Open Ports</h4><div id="portsList"><p class="empty-state">Login to load data</p></div></div>
       <div class="chart-card">
@@ -256,13 +216,11 @@
       <div class="chart-card"><h4><i class="fas fa-microchip" style="color:#e63946;"></i> Technologies</h4><div id="techList"><p class="empty-state">Login to load data</p></div></div>
     </div>
 
-    <!-- Scan History (Dynamic) -->
     <div class="scan-history">
       <h4><i class="fas fa-history"></i> Recent Scans <span id="historyCount" style="color:#999;">(0)</span></h4>
       <div id="historyList"><p class="empty-state">Login to view history</p></div>
     </div>
 
-    <!-- Features -->
     <div class="section-header"><i class="fas fa-tools"></i> Arsenal</div>
     <div class="features-grid">
       <div class="feature-item"><i class="fas fa-lock-open"></i>SSL/TLS Analysis</div>
@@ -279,6 +237,7 @@
 
   <script>
     const API = 'https://mr-robot-scanner-backend.onrender.com/api/v1';
+    const ADMIN_USER = 'pog'; // Your username for admin access
     let token = localStorage.getItem('t') || null;
     let user = localStorage.getItem('u') || null;
     let admin = localStorage.getItem('a') === '1';
@@ -288,14 +247,12 @@
     let lastResult = null;
     let scanHistory = [];
 
-    // Matrix
     (function(){const c=document.getElementById('matrix-bg');const x=c.getContext('2d');let w,h,cols,drops,fs=14;const ch='01'.split('');function r(){w=window.innerWidth;h=window.innerHeight;c.width=w;c.height=h;cols=Math.floor(w/fs);drops=[];for(let i=0;i<cols;i++)drops[i]=Math.floor(Math.random()*-h/fs);}function d(){x.fillStyle='rgba(10,10,10,0.05)';x.fillRect(0,0,w,h);x.fillStyle='#e63946';x.font=fs+'px "JetBrains Mono"';for(let i=0;i<drops.length;i++){x.fillText(ch[Math.floor(Math.random()*ch.length)],i*fs,drops[i]*fs);if(drops[i]*fs>h&&Math.random()>0.975)drops[i]=0;drops[i]++;}}window.addEventListener('resize',r);r();setInterval(d,45);})();
 
     function toast(m,t='info'){const b=document.getElementById('toast');b.textContent='🤖 '+m;b.style.display='block';b.style.borderColor=t==='success'?'#2ecc71':t==='error'?'#e63946':'#f39c12';b.style.color=t==='success'?'#2ecc71':t==='error'?'#e63946':'#f39c12';setTimeout(()=>b.style.display='none',3000);}
     function term(t){const b=document.getElementById('terminalBody');const l=document.createElement('div');l.className='terminal-line';l.innerHTML=t;b.appendChild(l);b.scrollTop=b.scrollHeight;}
     function clearTerm(){document.getElementById('terminalBody').innerHTML='';}
 
-    // Dynamic dashboard refresh
     async function refreshDashboard(){
       if(!token) return;
       try{
@@ -376,9 +333,11 @@
         const r=await fetch(`${API}/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
         const d=await r.json();
         if(!r.ok){toast('Login failed: '+(d.detail||'Error'),'error');return;}
-        token=d.access_token;user=d.username;admin=u.toLowerCase().includes('admin');
+        token=d.access_token;user=d.username;
+        // Admin check: backend is_admin OR username is 'pog'
+        admin = d.is_admin || d.username === ADMIN_USER;
         localStorage.setItem('t',token);localStorage.setItem('u',user);localStorage.setItem('a',admin?'1':'0');
-        updateUI();closeAuthModal();toast(`Welcome, ${user}!`,'success');
+        updateUI();closeAuthModal();toast(`Welcome, ${user}!${admin?' 👑':''}`,'success');
       }catch(e){toast('Cannot connect','error');}
     }
 
@@ -442,11 +401,8 @@
       document.getElementById('scanTargetDisplay').textContent=target;
       document.getElementById('reportActions').classList.remove('visible');
       term(`<span class="prompt">~#</span> <span class="text-white">./scan --target ${target}</span>`);
-      try{
-        const r=await startScan(target);
-        term(`<span class="text-green">[✓]</span> Scan started! ID: ${r.scan_id}`);
-        poll(r.scan_id);
-      }catch(e){term(`<span class="text-red">[✗]</span> ${e.message}`);toast('Scan failed','error');cancelScan();}
+      try{const r=await startScan(target);term(`<span class="text-green">[✓]</span> Scan started! ID: ${r.scan_id}`);poll(r.scan_id);}
+      catch(e){term(`<span class="text-red">[✗]</span> ${e.message}`);toast('Scan failed','error');cancelScan();}
     });
 
     function cancelScan(){
@@ -491,29 +447,30 @@
 
     async function showAdminPanel(){
       if(!admin){toast('Admin only','error');return;}
-      document.getElementById('adminContent').innerHTML='<span class="close-btn" onclick="document.getElementById(\'adminModal\').classList.remove(\'active\')">&times;</span><h2>ADMIN PANEL</h2><p style="color:#999;">Loading...</p>';
+      document.getElementById('adminContent').innerHTML='<span class="close-btn" onclick="document.getElementById(\'adminModal\').classList.remove(\'active\')">&times;</span><h2>👑 ADMIN PANEL</h2><p style="color:#999;">Loading data...</p>';
       document.getElementById('adminModal').classList.add('active');
       try{
         const[ur,sr]=await Promise.all([fetch(`${API}/admin/users`,{headers:{'Authorization':`Bearer ${token}`}}),fetch(`${API}/admin/scans`,{headers:{'Authorization':`Bearer ${token}`}})]);
         const users=ur.ok?await ur.json():[],scans=sr.ok?await sr.json():[];
         document.getElementById('adminContent').innerHTML=`
           <span class="close-btn" onclick="document.getElementById('adminModal').classList.remove('active')">&times;</span>
-          <h2>ADMIN PANEL</h2>
+          <h2>👑 ADMIN PANEL</h2>
+          <p style="color:#999;font-family:var(--font-mono);font-size:10px;">Logged in as: <strong style="color:#ffd700;">${user}</strong></p>
           <div class="admin-stats"><div class="admin-stat"><div class="number">${users.length}</div><div class="label">Users</div></div><div class="admin-stat"><div class="number">${scans.length}</div><div class="label">Scans</div></div><div class="admin-stat"><div class="number">${scans.filter(s=>s.status==='running').length}</div><div class="label">Active</div></div><div class="admin-stat"><div class="number">${scans.reduce((a,s)=>a+(s.vulns_count||0),0)}</div><div class="label">Vulns</div></div></div>
-          <h3 style="color:#ffd700;">Users</h3>
-          <table class="admin-table"><tr><th>ID</th><th>Username</th><th>Email</th><th>Status</th><th>Scans</th><th>Actions</th></tr>${users.map(u=>`<tr><td>#${u.id}</td><td>${u.username} ${u.is_admin?'<span class="admin-badge admin">ADMIN</span>':''}</td><td>${u.email}</td><td><span class="admin-badge ${u.is_active?'active':'inactive'}">${u.is_active?'Active':'Off'}</span></td><td>${scans.filter(s=>s.user_id===u.id).length}</td><td><button class="admin-btn-sm danger" onclick="deleteUser(${u.id})">Del</button></td></tr>`).join('')}</table>
-          <h3 style="color:#ffd700;">Recent Scans</h3>
-          <table class="admin-table"><tr><th>ID</th><th>Target</th><th>User</th><th>Status</th><th>Risk</th></tr>${scans.slice(0,10).map(s=>`<tr><td>#${s.id}</td><td>${s.target}</td><td>${users.find(u=>u.id===s.user_id)?.username||'?'}</td><td style="color:${s.status==='completed'?'#2ecc71':'#f39c12'}">${s.status}</td><td>${s.risk_score||0}</td></tr>`).join('')}</table>
+          <h3 style="color:#ffd700;margin-top:15px;">👥 Users</h3>
+          <table class="admin-table"><tr><th>ID</th><th>Username</th><th>Email</th><th>Status</th><th>Scans</th><th>Actions</th></tr>${users.map(u=>`<tr><td>#${u.id}</td><td>${u.username} ${u.is_admin?'<span class="admin-badge admin">ADMIN</span>':''} ${u.username===ADMIN_USER?'<span class="admin-badge admin">YOU</span>':''}</td><td style="font-size:10px;">${u.email}</td><td><span class="admin-badge ${u.is_active?'active':'inactive'}">${u.is_active?'Active':'Off'}</span></td><td>${scans.filter(s=>s.user_id===u.id).length}</td><td>${u.username!==user?`<button class="admin-btn-sm danger" onclick="deleteUser(${u.id})">Del</button>`:'-'}</td></tr>`).join('')}</table>
+          <h3 style="color:#ffd700;margin-top:15px;">📊 Recent Scans</h3>
+          <table class="admin-table"><tr><th>ID</th><th>Target</th><th>User</th><th>Status</th><th>Risk</th><th>Date</th></tr>${scans.slice(0,10).map(s=>`<tr><td>#${s.id}</td><td>${s.target}</td><td style="color:#ffd700;">${users.find(u=>u.id===s.user_id)?.username||'?'}</td><td style="color:${s.status==='completed'?'#2ecc71':s.status==='failed'?'#e63946':'#f39c12'}">${s.status.toUpperCase()}</td><td style="color:${s.risk_score>50?'#e63946':'#2ecc71'}">${s.risk_score||0}/100</td><td style="font-size:9px;">${s.created_at?new Date(s.created_at).toLocaleDateString():'-'}</td></tr>`).join('')||'<tr><td colspan="6" style="color:#999;text-align:center;">No scans yet</td></tr>'}</table>
         `;
-      }catch(e){document.getElementById('adminContent').innerHTML='<span class="close-btn" onclick="document.getElementById(\'adminModal\').classList.remove(\'active\')">&times;</span><h2>ADMIN PANEL</h2><p style="color:#e63946;">Failed to load. Check backend admin endpoints.</p>';}
+      }catch(e){document.getElementById('adminContent').innerHTML='<span class="close-btn" onclick="document.getElementById(\'adminModal\').classList.remove(\'active\')">&times;</span><h2>👑 ADMIN PANEL</h2><p style="color:#e63946;">Failed to load admin data. Check backend admin endpoints.</p>';}
     }
 
     async function deleteUser(id){
-      if(!confirm('Delete this user and all their scans?'))return;
+      if(!confirm('Delete this user and ALL their scans? This is irreversible!'))return;
       try{
         const r=await fetch(`${API}/admin/users/${id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});
-        if(r.ok){toast('User deleted','success');showAdminPanel();}else toast('Failed','error');
-      }catch(e){toast('Error','error');}
+        if(r.ok){toast('User deleted!','success');showAdminPanel();}else{const d=await r.json();toast('Failed: '+(d.detail||'Error'),'error');}
+      }catch(e){toast('Error deleting user','error');}
     }
 
     function scrollToSection(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});}
@@ -523,7 +480,7 @@
     document.getElementById('adminModal').addEventListener('click',e=>{if(e.target===document.getElementById('adminModal'))document.getElementById('adminModal').classList.remove('active');});
 
     updateUI();
-    console.log('%c🤖 Mr. Robot %cDynamic Scanner %cLive', 'font-size:18px;', 'color:#e63946;', 'color:#2ecc71;');
+    console.log('%c🤖 Mr. Robot %c| %cAdmin: pog %c| %cDynamic Scanner', 'font-size:18px;', 'color:#e63946;', 'color:#ffd700;', 'color:#fff;', 'color:#2ecc71;');
   </script>
 </body>
 </html>
