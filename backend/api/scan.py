@@ -34,10 +34,9 @@ def calculate_risk_score(vulnerabilities: list) -> int:
     return min(score, 100)
 
 
-def run_full_scan_sync(scan_id: int, target: str):
+def run_full_scan_sync(scan_id: int, target: str, session_factory):
     """Execute full scan in background thread"""
-    db = SessionLocal()
-
+    db = session_factory()
     try:
         scan = db.query(Scan).filter(Scan.id == scan_id).first()
         if not scan:
@@ -50,7 +49,7 @@ def run_full_scan_sync(scan_id: int, target: str):
 
         # Step 1: Port Scan
         scan.progress = 10
-        scan.current_step = "Port scanning"
+        scan.current_step = "Port scanning with Nmap"
         db.commit()
         ports_result = run_nmap_scan(target)
         scan.ports_data = ports_result
@@ -78,7 +77,7 @@ def run_full_scan_sync(scan_id: int, target: str):
 
         # Step 4: Security Headers
         scan.progress = 65
-        scan.current_step = "Checking headers"
+        scan.current_step = "Checking security headers"
         db.commit()
         headers_result = check_security_headers(target)
         scan.headers_data = headers_result
@@ -114,14 +113,48 @@ def run_full_scan_sync(scan_id: int, target: str):
         db.commit()
 
     except Exception as e:
-        scan.status = "failed"
-        scan.error_message = str(e)
-        db.commit()
+        if scan:
+            scan.status = "failed"
+            scan.error_message = str(e)
+            db.commit()
     finally:
         db.close()
 
 
-@router.post("/scan/public")
+@router.post("/scan", response_model=dict)
+async def start_scan(
+    request: ScanRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Start a scan (authentication required)"""
+    target = request.target.strip()
+    if not target:
+        raise HTTPException(status_code=400, detail="Target is required")
+
+    scan = Scan(
+        user_id=current_user.id,
+        target=target,
+        scan_type=request.scan_type,
+        status="pending",
+        progress=0
+    )
+    db.add(scan)
+    db.commit()
+    db.refresh(scan)
+
+    thread = threading.Thread(target=run_full_scan_sync, args=(scan.id, target, SessionLocal))
+    thread.start()
+
+    return {
+        "scan_id": scan.id,
+        "target": target,
+        "status": "scan_started",
+        "message": f"Scan started for {target}"
+    }
+
+
+@router.post("/scan/public", response_model=dict)
 async def start_public_scan(request: ScanRequest, db: Session = Depends(get_db)):
     """Start a scan without authentication"""
     target = request.target.strip()
@@ -138,18 +171,14 @@ async def start_public_scan(request: ScanRequest, db: Session = Depends(get_db))
     db.commit()
     db.refresh(scan)
 
-    thread = threading.Thread(
-        target=run_full_scan_sync,
-        args=(scan.id, target),
-        daemon=True
-    )
+    thread = threading.Thread(target=run_full_scan_sync, args=(scan.id, target, SessionLocal))
     thread.start()
 
     return {
         "scan_id": scan.id,
         "target": target,
         "status": "scan_started",
-        "message": f"Scan initiated for {target}"
+        "message": f"Scan started for {target}"
     }
 
 
@@ -181,10 +210,33 @@ async def get_scan(scan_id: int, db: Session = Depends(get_db)):
     )
 
 
+@router.get("/scans", response_model=List[ScanResponse])
+async def list_scans(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """List scans for current user only"""
+    scans = db.query(Scan).filter(Scan.user_id == current_user.id).order_by(Scan.created_at.desc()).limit(20).all()
+    return [
+        ScanResponse(
+            id=s.id, target=s.target, status=s.status, progress=s.progress,
+            risk_score=s.risk_score, ports=s.ports_data or [],
+            technologies=s.technologies_data or [], vulnerabilities=s.vulnerabilities_data or [],
+            subdomains=s.subdomains_data or [], ssl_info=s.ssl_data or {},
+            headers_info=s.headers_data or {}, started_at=s.started_at,
+            completed_at=s.completed_at, duration_seconds=s.duration_seconds,
+            error_message=s.error_message, created_at=s.created_at
+        ) for s in scans
+    ]
+
+
 @router.get("/dashboard/stats", response_model=DashboardStats)
-async def get_dashboard_stats(db: Session = Depends(get_db)):
-    """Get dashboard statistics"""
-    scans = db.query(Scan).all()
+async def get_dashboard_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get dashboard stats for current user"""
+    scans = db.query(Scan).filter(Scan.user_id == current_user.id).all()
     total = len(scans)
     
     all_vulns = []
