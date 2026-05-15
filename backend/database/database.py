@@ -1,6 +1,7 @@
 """
 Mr. Robot Scanner - Database Configuration
 Handles database connection and session management.
+Supports both SQLite (local) and PostgreSQL (production).
 """
 
 from sqlalchemy import create_engine
@@ -11,21 +12,13 @@ from typing import Generator
 from config import settings
 
 # Create database engine
-if "sqlite" in settings.DATABASE_URL:
-    engine = create_engine(
-        settings.DATABASE_URL,
-        connect_args={"check_same_thread": False},
-        echo=False,  # Set to True for SQL debugging
-        pool_pre_ping=True,
-    )
-else:
-    engine = create_engine(
-        settings.DATABASE_URL,
-        pool_size=10,
-        max_overflow=20,
-        pool_pre_ping=True,
-        echo=False,
-    )
+engine = create_engine(
+    settings.DATABASE_URL,
+    pool_size=5,
+    max_overflow=10,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+)
 
 # Session factory
 SessionLocal = sessionmaker(
@@ -61,4 +54,4 @@ def get_db() -> Generator:
 def init_db():
     """Initialize database tables"""
     Base.metadata.create_all(bind=engine)
-    print("✅ Database initialized successfully")
+    print("✅ Database tables created successfully")
