@@ -59,7 +59,10 @@
     .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
     .terminal-dot.red { background: #ff5f56; } .terminal-dot.yellow { background: #ffbd2e; } .terminal-dot.green { background: #27c93f; }
     .terminal-title { margin-left: 10px; font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
-    .terminal-body { padding: 15px; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; color: var(--accent-red); min-height: 80px; max-height: 250px; overflow-y: auto; }
+    .terminal-body { padding: 15px; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; color: var(--accent-red); min-height: 100px; max-height: 250px; overflow-y: auto; }
+    .terminal-input-line { display: flex; align-items: center; gap: 5px; margin-top: 5px; }
+    .terminal-input-line .prompt { white-space: nowrap; }
+    .terminal-input-line input { flex: 1; background: transparent; border: none; color: #fff; font-family: var(--font-mono); font-size: 12px; outline: none; caret-color: #e63946; }
     .prompt { color: var(--accent-red); font-weight: 600; }
     .text-red { color: #e63946; } .text-green { color: #2ecc71; } .text-yellow { color: #f39c12; } .text-gray { color: #999; } .text-white { color: #fff; }
     .report-actions { display: none; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 15px 0; }
@@ -170,8 +173,8 @@
     <nav class="navbar">
       <div class="logo"><span class="logo-emoji">🤖</span><span class="logo-text"><span class="mr">Mr.</span> Robot</span></div>
       <div class="nav-links">
-        <a href="#" onclick="scrollToSection('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</a>
-        <a href="#" onclick="scrollToSection('scanner')"><i class="fas fa-crosshairs"></i> Scanner</a>
+        <a href="#dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="#top"><i class="fas fa-crosshairs"></i> Scanner</a>
         <a href="#" onclick="showMyReports()"><i class="fas fa-file-alt"></i> Reports</a>
         <a href="#" onclick="showAdminPanel()" id="adminLink" style="display:none;" class="admin-link"><i class="fas fa-crown"></i> Admin</a>
         <span id="navUser" style="display:none;" class="user-info"><i class="fas fa-user-secret"></i> <span id="navUsername"></span></span>
@@ -180,7 +183,7 @@
       </div>
     </nav>
 
-    <div class="hero" id="scanner">
+    <div class="hero" id="top">
       <div class="hero-badge"><span class="refresh-indicator"></span> LIVE SYSTEM — v2.4.1</div>
       <h1><span class="highlight">MR. ROBOT</span> SCANNER</h1>
       <p class="hero-quote">"Control is an illusion. Security is dynamic."</p>
@@ -191,8 +194,14 @@
       <div class="report-actions" id="reportActions"><button class="report-btn" onclick="showReport()">View Report</button><button class="report-btn" onclick="downloadPDF()">Download PDF</button></div>
       <div class="terminal-wrapper" id="terminalWrapper">
         <div class="terminal">
-          <div class="terminal-header"><span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span><span class="terminal-title">terminal</span></div>
-          <div class="terminal-body" id="terminalBody"><div class="terminal-line"><span class="prompt">~#</span> <span class="text-gray">System idle.</span></div></div>
+          <div class="terminal-header"><span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span><span class="terminal-title">mr.robot@scanner:~#</span></div>
+          <div class="terminal-body" id="terminalBody">
+            <div class="terminal-line"><span class="prompt">~#</span> <span class="text-gray">System idle. Type 'help' for commands.</span></div>
+            <div class="terminal-input-line" id="terminalInputLine">
+              <span class="prompt">~#</span>
+              <input type="text" id="terminalInput" placeholder="Type command..." autocomplete="off">
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -250,50 +259,103 @@
     (function(){const c=document.getElementById('matrix-bg');const x=c.getContext('2d');let w,h,cols,drops,fs=14;const ch='01'.split('');function r(){w=window.innerWidth;h=window.innerHeight;c.width=w;c.height=h;cols=Math.floor(w/fs);drops=[];for(let i=0;i<cols;i++)drops[i]=Math.floor(Math.random()*-h/fs);}function d(){x.fillStyle='rgba(10,10,10,0.05)';x.fillRect(0,0,w,h);x.fillStyle='#e63946';x.font=fs+'px "JetBrains Mono"';for(let i=0;i<drops.length;i++){x.fillText(ch[Math.floor(Math.random()*ch.length)],i*fs,drops[i]*fs);if(drops[i]*fs>h&&Math.random()>0.975)drops[i]=0;drops[i]++;}}window.addEventListener('resize',r);r();setInterval(d,45);})();
 
     function toast(m,t='info'){const b=document.getElementById('toast');b.textContent='🤖 '+m;b.style.display='block';b.style.borderColor=t==='success'?'#2ecc71':t==='error'?'#e63946':'#f39c12';b.style.color=t==='success'?'#2ecc71':t==='error'?'#e63946':'#f39c12';setTimeout(()=>b.style.display='none',3000);}
-    function term(t){const b=document.getElementById('terminalBody');const l=document.createElement('div');l.className='terminal-line';l.innerHTML=t;b.appendChild(l);b.scrollTop=b.scrollHeight;}
-    function clearTerm(){document.getElementById('terminalBody').innerHTML='';}
+    function term(t){const b=document.getElementById('terminalBody');const l=document.createElement('div');l.className='terminal-line';l.innerHTML=t;const inputLine=document.getElementById('terminalInputLine');b.insertBefore(l,inputLine);b.scrollTop=b.scrollHeight;}
+    function clearTerm(){const b=document.getElementById('terminalBody');b.innerHTML='<div class="terminal-input-line" id="terminalInputLine"><span class="prompt">~#</span><input type="text" id="terminalInput" placeholder="Type command..." autocomplete="off"></div>';setupTerminalInput();}
 
-    // Update dashboard from scan result
-    function updateDashboardFromResult(r) {
-      const vulns = r.vulnerabilities || [];
-      const counts = { critical: 0, high: 0, medium: 0, low: 0 };
-      vulns.forEach(v => { const s = (v.severity || 'low').toLowerCase(); if (counts[s] !== undefined) counts[s]++; });
+    // Interactive Terminal
+    function setupTerminalInput(){
+      const input=document.getElementById('terminalInput');
+      if(!input)return;
+      input.addEventListener('keypress',function(e){
+        if(e.key==='Enter'){
+          const cmd=this.value.trim();
+          this.value='';
+          if(cmd)handleTerminalCommand(cmd);
+        }
+      });
+    }
+
+    function handleTerminalCommand(cmd){
+      const parts=cmd.toLowerCase().split(' ');
+      const command=parts[0];
+      const args=parts.slice(1).join(' ');
       
-      document.getElementById('criticalCount').textContent = counts.critical;
-      document.getElementById('highCount').textContent = counts.high;
-      document.getElementById('mediumCount').textContent = counts.medium;
-      document.getElementById('lowCount').textContent = counts.low;
+      term(`<span class="prompt">~#</span> <span class="text-white">${cmd}</span>`);
       
-      const ports = r.ports || [];
-      if (ports.length > 0) {
-        document.getElementById('portsList').innerHTML = ports.map(p => 
-          `<div class="port-item ${p.status}"><span>${p.port} <span style="color:#999;">${p.service}</span></span><span class="status-${p.status}">${p.status.toUpperCase()}</span></div>`
-        ).join('');
-      } else {
-        document.getElementById('portsList').innerHTML = '<p class="empty-state">No ports found</p>';
+      switch(command){
+        case 'help':
+          term(`<span class="text-green">Available commands:</span>`);
+          term(`<span class="text-gray">  scan &lt;target&gt;</span> - Start a scan`);
+          term(`<span class="text-gray">  status</span> - Show dashboard stats`);
+          term(`<span class="text-gray">  history</span> - Show recent scans`);
+          term(`<span class="text-gray">  report</span> - View last report`);
+          term(`<span class="text-gray">  clear</span> - Clear terminal`);
+          term(`<span class="text-gray">  help</span> - Show this help`);
+          term(`<span class="text-gray">  whoami</span> - Show current user`);
+          break;
+        case 'scan':
+          if(!token){term(`<span class="text-red">Error: Login required. Use the Login button above.</span>`);return;}
+          if(args){
+            document.getElementById('targetInput').value=args;
+            document.getElementById('scanButton').click();
+          }else{
+            term(`<span class="text-yellow">Usage: scan &lt;target&gt;</span>`);
+            term(`<span class="text-gray">Example: scan scanme.nmap.org</span>`);
+          }
+          break;
+        case 'status':
+          if(!token){term(`<span class="text-red">Login required</span>`);return;}
+          refreshDashboard();
+          term(`<span class="text-green">Dashboard refreshed</span>`);
+          break;
+        case 'history':
+          if(!token){term(`<span class="text-red">Login required</span>`);return;}
+          loadHistory();
+          term(`<span class="text-green">History loaded</span>`);
+          break;
+        case 'report':
+          if(!lastResult){term(`<span class="text-yellow">No report available. Run a scan first.</span>`);return;}
+          showReport();
+          term(`<span class="text-green">Report opened</span>`);
+          break;
+        case 'clear':
+          clearTerm();
+          term(`<span class="text-gray">Terminal cleared.</span>`);
+          break;
+        case 'whoami':
+          if(user)term(`<span class="text-green">Logged in as: ${user}${admin?' 👑':''}</span>`);
+          else term(`<span class="text-yellow">Not logged in</span>`);
+          break;
+        default:
+          term(`<span class="text-red">Unknown command: ${command}</span>`);
+          term(`<span class="text-gray">Type 'help' for available commands</span>`);
       }
-      
-      const techs = r.technologies || [];
-      if (techs.length > 0) {
-        document.getElementById('techList').innerHTML = techs.map(t => 
-          `<span class="tech-tag">${t.name}${t.version ? ' ' + t.version : ''}</span>`
-        ).join('');
-      } else {
-        document.getElementById('techList').innerHTML = '<p class="empty-state">No technologies detected</p>';
-      }
-      
-      const total = counts.critical + counts.high + counts.medium + counts.low || 1;
-      document.getElementById('criticalBar').style.width = (counts.critical / total * 100) + '%';
-      document.getElementById('highBar').style.width = (counts.high / total * 100) + '%';
-      document.getElementById('mediumBar').style.width = (counts.medium / total * 100) + '%';
-      document.getElementById('lowBar').style.width = (counts.low / total * 100) + '%';
+    }
+
+    function updateDashboardFromResult(r){
+      const vulns=r.vulnerabilities||[];
+      const counts={critical:0,high:0,medium:0,low:0};
+      vulns.forEach(v=>{const s=(v.severity||'low').toLowerCase();if(counts[s]!==undefined)counts[s]++;});
+      document.getElementById('criticalCount').textContent=counts.critical;
+      document.getElementById('highCount').textContent=counts.high;
+      document.getElementById('mediumCount').textContent=counts.medium;
+      document.getElementById('lowCount').textContent=counts.low;
+      const ports=r.ports||[];
+      document.getElementById('portsList').innerHTML=ports.length?ports.map(p=>`<div class="port-item ${p.status}"><span>${p.port} <span style="color:#999;">${p.service}</span></span><span class="status-${p.status}">${p.status.toUpperCase()}</span></div>`).join(''):'<p class="empty-state">No ports found</p>';
+      const techs=r.technologies||[];
+      document.getElementById('techList').innerHTML=techs.length?techs.map(t=>`<span class="tech-tag">${t.name}${t.version?' '+t.version:''}</span>`).join(''):'<p class="empty-state">No technologies detected</p>';
+      const total=counts.critical+counts.high+counts.medium+counts.low||1;
+      document.getElementById('criticalBar').style.width=(counts.critical/total*100)+'%';
+      document.getElementById('highBar').style.width=(counts.high/total*100)+'%';
+      document.getElementById('mediumBar').style.width=(counts.medium/total*100)+'%';
+      document.getElementById('lowBar').style.width=(counts.low/total*100)+'%';
     }
 
     async function refreshDashboard(){
-      if(!token) return;
+      if(!token)return;
       try{
         const r=await fetch(`${API}/dashboard/stats`,{headers:{'Authorization':`Bearer ${token}`}});
-        if(!r.ok) return;
+        if(!r.ok)return;
         const d=await r.json();
         document.getElementById('criticalCount').textContent=d.critical_count||0;
         document.getElementById('highCount').textContent=d.high_count||0;
@@ -308,49 +370,37 @@
     }
 
     async function loadHistory(){
-      if(!token) return;
+      if(!token)return;
       try{
         const r=await fetch(`${API}/scans`,{headers:{'Authorization':`Bearer ${token}`}});
-        if(!r.ok) return;
+        if(!r.ok)return;
         scanHistory=await r.json();
         document.getElementById('historyCount').textContent=`(${scanHistory.length})`;
         const list=document.getElementById('historyList');
         if(scanHistory.length===0){list.innerHTML='<p class="empty-state">No scans yet</p>';return;}
-        list.innerHTML=scanHistory.slice(0,10).map(s=>`
-          <div class="history-item" onclick="loadScanResult(${s.id})">
-            <span>${s.target}</span>
-            <span style="color:#999;">${new Date(s.created_at).toLocaleDateString()}</span>
-            <span class="history-status ${s.status}">${s.status}</span>
-            <span style="color:${s.risk_score>50?'#e63946':'#2ecc71'}">${s.risk_score||0}/100</span>
-          </div>
-        `).join('');
+        list.innerHTML=scanHistory.slice(0,10).map(s=>`<div class="history-item" onclick="loadScanResult(${s.id})"><span>${s.target}</span><span style="color:#999;">${new Date(s.created_at).toLocaleDateString()}</span><span class="history-status ${s.status}">${s.status}</span><span style="color:${s.risk_score>50?'#e63946':'#2ecc71'}">${s.risk_score||0}/100</span></div>`).join('');
       }catch(e){}
     }
 
     async function loadScanResult(id){
-      try{
-        const r=await fetch(`${API}/scan/${id}`);
-        const d=await r.json();
-        if(r.ok){lastResult=d;updateDashboardFromResult(d);showReport();}
-      }catch(e){toast('Failed to load scan','error');}
+      try{const r=await fetch(`${API}/scan/${id}`);const d=await r.json();if(r.ok){lastResult=d;updateDashboardFromResult(d);showReport();}}catch(e){toast('Failed to load scan','error');}
     }
 
     function updateUI(){
       const sl=document.getElementById('scanLocked'),sb=document.getElementById('scanBox'),tw=document.getElementById('terminalWrapper');
-      const lb=document.getElementById('loginBtn'),lo=document.getElementById('logoutBtn'),nu=document.getElementById('navUser');
-      const al=document.getElementById('adminLink');
+      const lb=document.getElementById('loginBtn'),lo=document.getElementById('logoutBtn'),nu=document.getElementById('navUser'),al=document.getElementById('adminLink');
       if(token&&user){
         sl.classList.remove('visible');sb.classList.add('visible');tw.classList.add('visible');
         lb.style.display='none';lo.style.display='inline-block';nu.style.display='flex';
         document.getElementById('navUsername').textContent=user;
-        if(admin) al.style.display='inline-flex';
+        if(admin)al.style.display='inline-flex';
         refreshDashboard();loadHistory();
-        if(refreshInterval) clearInterval(refreshInterval);
+        if(refreshInterval)clearInterval(refreshInterval);
         refreshInterval=setInterval(()=>{refreshDashboard();loadHistory();},30000);
       }else{
         sl.classList.add('visible');sb.classList.remove('visible');tw.classList.remove('visible');
         lb.style.display='inline-block';lo.style.display='none';nu.style.display='none';al.style.display='none';
-        if(refreshInterval) clearInterval(refreshInterval);
+        if(refreshInterval)clearInterval(refreshInterval);
       }
     }
 
@@ -369,10 +419,10 @@
         const r=await fetch(`${API}/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
         const d=await r.json();
         if(!r.ok){toast('Login failed: '+(d.detail||'Error'),'error');return;}
-        token=d.access_token;user=d.username;
-        admin = d.is_admin || d.username === ADMIN_USER;
+        token=d.access_token;user=d.username;admin=d.is_admin||d.username===ADMIN_USER;
         localStorage.setItem('t',token);localStorage.setItem('u',user);localStorage.setItem('a',admin?'1':'0');
         updateUI();closeAuthModal();toast(`Welcome, ${user}!${admin?' 👑':''}`,'success');
+        term(`<span class="text-green">Logged in as ${user}${admin?' (admin)':''}</span>`);
       }catch(e){toast('Cannot connect','error');}
     }
 
@@ -387,7 +437,7 @@
       }catch(e){toast('Cannot connect','error');}
     }
 
-    function handleLogout(){token=null;user=null;admin=false;lastResult=null;scanHistory=[];localStorage.clear();updateUI();document.getElementById('portsList').innerHTML='<p class="empty-state">Login to load data</p>';document.getElementById('techList').innerHTML='<p class="empty-state">Login to load data</p>';document.getElementById('historyList').innerHTML='<p class="empty-state">Login to view history</p>';toast('Logged out','info');}
+    function handleLogout(){token=null;user=null;admin=false;lastResult=null;scanHistory=[];localStorage.clear();updateUI();document.getElementById('portsList').innerHTML='<p class="empty-state">Login to load data</p>';document.getElementById('techList').innerHTML='<p class="empty-state">Login to load data</p>';document.getElementById('historyList').innerHTML='<p class="empty-state">Login to view history</p>';clearTerm();term(`<span class="text-gray">Logged out.</span>`);toast('Logged out','info');}
 
     async function startScan(target){
       const r=await fetch(`${API}/scan`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({target,scan_type:'full'})});
@@ -397,28 +447,10 @@
     function poll(scanId){
       pollInterval=setInterval(async()=>{
         if(!scanning){clearInterval(pollInterval);return;}
-        try{
-          const r=await fetch(`${API}/scan/${scanId}`);const d=await r.json();
-          if(d.status==='completed'){
-            clearInterval(pollInterval);lastResult=d;
-            updateDashboardFromResult(d); // UPDATE DASHBOARD WITH SCAN DATA
-            term(`<span class="text-green">[✓]</span> Scan complete! Ports: ${d.ports?.length||0} | Vulns: ${d.vulnerabilities?.length||0}`);
-            document.getElementById('reportActions').classList.add('visible');
-            scanning=false;document.getElementById('scanButton').innerHTML='<i class="fas fa-skull"></i> Scan';
-            document.getElementById('scanButton').classList.remove('scanning');
-            document.getElementById('scanButton').disabled=false;
-            document.getElementById('cancelBox').style.display='none';
-            document.getElementById('scanInfo').style.display='none';
-            refreshDashboard();loadHistory();toast('Scan complete!','success');
-          }else if(d.status==='failed'){
-            clearInterval(pollInterval);term(`<span class="text-red">[✗]</span> Failed: ${d.error_message||'Unknown'}`);
-            scanning=false;document.getElementById('scanButton').innerHTML='<i class="fas fa-skull"></i> Scan';
-            document.getElementById('scanButton').classList.remove('scanning');
-            document.getElementById('scanButton').disabled=false;
-            document.getElementById('cancelBox').style.display='none';
-            document.getElementById('scanInfo').style.display='none';
-            toast('Scan failed','error');
-          }else{term(`<span class="text-yellow">[~]</span> ${d.progress}% - ${d.current_step||'Scanning...'}`);}
+        try{const r=await fetch(`${API}/scan/${scanId}`);const d=await r.json();
+          if(d.status==='completed'){clearInterval(pollInterval);lastResult=d;updateDashboardFromResult(d);term(`<span class="text-green">[✓]</span> Scan complete! Ports: ${d.ports?.length||0} | Vulns: ${d.vulnerabilities?.length||0}`);document.getElementById('reportActions').classList.add('visible');scanning=false;document.getElementById('scanButton').innerHTML='<i class="fas fa-skull"></i> Scan';document.getElementById('scanButton').classList.remove('scanning');document.getElementById('scanButton').disabled=false;document.getElementById('cancelBox').style.display='none';document.getElementById('scanInfo').style.display='none';refreshDashboard();loadHistory();toast('Scan complete!','success');}
+          else if(d.status==='failed'){clearInterval(pollInterval);term(`<span class="text-red">[✗]</span> Failed: ${d.error_message||'Unknown'}`);scanning=false;document.getElementById('scanButton').innerHTML='<i class="fas fa-skull"></i> Scan';document.getElementById('scanButton').classList.remove('scanning');document.getElementById('scanButton').disabled=false;document.getElementById('cancelBox').style.display='none';document.getElementById('scanInfo').style.display='none';toast('Scan failed','error');}
+          else{term(`<span class="text-yellow">[~]</span> ${d.progress}% - ${d.current_step||'Scanning...'}`);}
         }catch(e){}
       },2000);
     }
@@ -430,13 +462,10 @@
       if(!target){toast('Enter a target','error');return;}
       scanning=true;clearTerm();
       document.getElementById('scanButton').innerHTML='<i class="fas fa-spinner fa-spin"></i> Scanning...';
-      document.getElementById('scanButton').classList.add('scanning');
-      document.getElementById('scanButton').disabled=false;
-      document.getElementById('cancelBox').style.display='block';
-      document.getElementById('scanInfo').style.display='block';
-      document.getElementById('scanTargetDisplay').textContent=target;
-      document.getElementById('reportActions').classList.remove('visible');
-      term(`<span class="prompt">~#</span> <span class="text-white">./scan --target ${target}</span>`);
+      document.getElementById('scanButton').classList.add('scanning');document.getElementById('scanButton').disabled=false;
+      document.getElementById('cancelBox').style.display='block';document.getElementById('scanInfo').style.display='block';
+      document.getElementById('scanTargetDisplay').textContent=target;document.getElementById('reportActions').classList.remove('visible');
+      term(`<span class="text-white">./scan --target ${target}</span>`);
       try{const r=await startScan(target);term(`<span class="text-green">[✓]</span> Scan started! ID: ${r.scan_id}`);poll(r.scan_id);}
       catch(e){term(`<span class="text-red">[✗]</span> ${e.message}`);toast('Scan failed','error');cancelScan();}
     });
@@ -444,38 +473,24 @@
     function cancelScan(){
       scanning=false;if(pollInterval)clearInterval(pollInterval);
       document.getElementById('scanButton').innerHTML='<i class="fas fa-skull"></i> Scan';
-      document.getElementById('scanButton').classList.remove('scanning');
-      document.getElementById('scanButton').disabled=false;
-      document.getElementById('cancelBox').style.display='none';
-      document.getElementById('scanInfo').style.display='none';
+      document.getElementById('scanButton').classList.remove('scanning');document.getElementById('scanButton').disabled=false;
+      document.getElementById('cancelBox').style.display='none';document.getElementById('scanInfo').style.display='none';
       term(`<span class="text-yellow">[!]</span> Cancelled`);
     }
 
     function showReport(){
       if(!lastResult){toast('No scan data','error');return;}
       const r=lastResult;const ports=r.ports||[],vulns=r.vulnerabilities||[],techs=r.technologies||[],subs=r.subdomains||[];
-      document.getElementById('reportContent').innerHTML=`
-        <span class="close-btn" onclick="document.getElementById('reportModal').classList.remove('active')">&times;</span>
-        <h2>SCAN REPORT</h2>
-        <p style="font-size:10px;color:#666;">${r.target} | ${user} | ${r.risk_score}/100 | ${new Date().toLocaleString()}</p>
-        <div class="report-section"><h3>Ports (${ports.length})</h3>${ports.map(p=>`<div style="font-size:11px;padding:3px;">${p.port} - ${p.service} <span style="color:${p.status==='open'?'#2ecc71':'#f39c12'}">${p.status}</span></div>`).join('')||'<p style="color:#666;">None</p>'}</div>
-        <div class="report-section"><h3>Vulnerabilities (${vulns.length})</h3>${vulns.map(v=>`<div class="vuln-item ${v.severity}"><span class="severity-badge ${v.severity}">${v.severity}</span> <strong>${v.title}</strong> ${v.cve_id||''}<p style="font-size:10px;color:#666;">${v.description}</p></div>`).join('')||'<p style="color:#666;">None</p>'}</div>
-        <div class="report-section"><h3>Technologies</h3>${techs.map(t=>`<span class="tech-tag" style="color:#111;">${t.name}${t.version?' '+t.version:''}</span>`).join('')||'<span style="color:#666;">None</span>'}</div>
-        <div class="report-section"><h3>Subdomains</h3>${subs.map(s=>`<div style="font-size:11px;">↳ ${s}</div>`).join('')||'<span style="color:#666;">None</span>'}</div>
-        <p style="text-align:center;color:#999;font-size:9px;">Private report for ${user}</p>
-        <div style="text-align:center;margin-top:10px;"><button class="report-btn" onclick="downloadPDF()" style="border-color:#e63946;color:#e63946;">Download PDF</button></div>
-      `;
+      document.getElementById('reportContent').innerHTML=`<span class="close-btn" onclick="document.getElementById('reportModal').classList.remove('active')">&times;</span><h2>SCAN REPORT</h2><p style="font-size:10px;color:#666;">${r.target} | ${user} | ${r.risk_score}/100 | ${new Date().toLocaleString()}</p><div class="report-section"><h3>Ports (${ports.length})</h3>${ports.map(p=>`<div style="font-size:11px;padding:3px;">${p.port} - ${p.service} <span style="color:${p.status==='open'?'#2ecc71':'#f39c12'}">${p.status}</span></div>`).join('')||'<p style="color:#666;">None</p>'}</div><div class="report-section"><h3>Vulnerabilities (${vulns.length})</h3>${vulns.map(v=>`<div class="vuln-item ${v.severity}"><span class="severity-badge ${v.severity}">${v.severity}</span> <strong>${v.title}</strong> ${v.cve_id||''}<p style="font-size:10px;color:#666;">${v.description}</p></div>`).join('')||'<p style="color:#666;">None</p>'}</div><div class="report-section"><h3>Technologies</h3>${techs.map(t=>`<span class="tech-tag" style="color:#111;">${t.name}${t.version?' '+t.version:''}</span>`).join('')||'<span style="color:#666;">None</span>'}</div><div class="report-section"><h3>Subdomains</h3>${subs.map(s=>`<div style="font-size:11px;">↳ ${s}</div>`).join('')||'<span style="color:#666;">None</span>'}</div><p style="text-align:center;color:#999;font-size:9px;">Private report for ${user}</p><div style="text-align:center;margin-top:10px;"><button class="report-btn" onclick="downloadPDF()" style="border-color:#e63946;color:#e63946;">Download PDF</button></div>`;
       document.getElementById('reportModal').classList.add('active');
     }
 
     async function downloadPDF(){
-      if(!lastResult)return;
-      showReport();await new Promise(r=>setTimeout(r,500));
+      if(!lastResult)return;showReport();await new Promise(r=>setTimeout(r,500));
       const{jsPDF}=window.jspdf;const pdf=new jsPDF('p','mm','a4');
       html2canvas(document.getElementById('reportContent'),{scale:2,backgroundColor:'#ffffff'}).then(canvas=>{
-        const img=canvas.toDataURL('image/png');const w=210;const h=canvas.height*w/canvas.width;
-        pdf.addImage(img,'PNG',0,0,w,h);pdf.save(`mr-robot-${user}-${Date.now()}.pdf`);toast('PDF downloaded!','success');
-        document.getElementById('reportModal').classList.remove('active');
+        const img=canvas.toDataURL('image/png');pdf.addImage(img,'PNG',0,0,210,canvas.height*210/canvas.width);
+        pdf.save(`mr-robot-${user}-${Date.now()}.pdf`);toast('PDF downloaded!','success');document.getElementById('reportModal').classList.remove('active');
       });
     }
 
@@ -483,40 +498,25 @@
 
     async function showAdminPanel(){
       if(!admin){toast('Admin only','error');return;}
-      document.getElementById('adminContent').innerHTML='<span class="close-btn" onclick="document.getElementById(\'adminModal\').classList.remove(\'active\')">&times;</span><h2>👑 ADMIN PANEL</h2><p style="color:#999;">Loading data...</p>';
+      document.getElementById('adminContent').innerHTML='<span class="close-btn" onclick="document.getElementById(\'adminModal\').classList.remove(\'active\')">&times;</span><h2>👑 ADMIN PANEL</h2><p style="color:#999;">Loading...</p>';
       document.getElementById('adminModal').classList.add('active');
       try{
         const[ur,sr]=await Promise.all([fetch(`${API}/admin/users`,{headers:{'Authorization':`Bearer ${token}`}}),fetch(`${API}/admin/scans`,{headers:{'Authorization':`Bearer ${token}`}})]);
         const users=ur.ok?await ur.json():[],scans=sr.ok?await sr.json():[];
-        document.getElementById('adminContent').innerHTML=`
-          <span class="close-btn" onclick="document.getElementById('adminModal').classList.remove('active')">&times;</span>
-          <h2>👑 ADMIN PANEL</h2>
-          <p style="color:#999;font-family:var(--font-mono);font-size:10px;">Admin: <strong style="color:#ffd700;">${user}</strong></p>
-          <div class="admin-stats"><div class="admin-stat"><div class="number">${users.length}</div><div class="label">Users</div></div><div class="admin-stat"><div class="number">${scans.length}</div><div class="label">Scans</div></div><div class="admin-stat"><div class="number">${scans.filter(s=>s.status==='running').length}</div><div class="label">Active</div></div><div class="admin-stat"><div class="number">${scans.reduce((a,s)=>a+(s.vulns_count||0),0)}</div><div class="label">Vulns</div></div></div>
-          <h3 style="color:#ffd700;margin-top:15px;">👥 Users</h3>
-          <table class="admin-table"><tr><th>ID</th><th>Username</th><th>Email</th><th>Status</th><th>Scans</th><th>Actions</th></tr>${users.map(u=>`<tr><td>#${u.id}</td><td>${u.username} ${u.is_admin?'<span class="admin-badge admin">ADMIN</span>':''}</td><td style="font-size:10px;">${u.email}</td><td><span class="admin-badge ${u.is_active?'active':'inactive'}">${u.is_active?'Active':'Off'}</span></td><td>${scans.filter(s=>s.user_id===u.id).length}</td><td>${u.username!==user?`<button class="admin-btn-sm danger" onclick="deleteUser(${u.id})">Del</button>`:'-'}</td></tr>`).join('')}</table>
-          <h3 style="color:#ffd700;margin-top:15px;">📊 Recent Scans</h3>
-          <table class="admin-table"><tr><th>ID</th><th>Target</th><th>User</th><th>Status</th><th>Risk</th></tr>${scans.slice(0,10).map(s=>`<tr><td>#${s.id}</td><td>${s.target}</td><td style="color:#ffd700;">${users.find(u=>u.id===s.user_id)?.username||'?'}</td><td style="color:${s.status==='completed'?'#2ecc71':'#f39c12'}">${s.status}</td><td style="color:${s.risk_score>50?'#e63946':'#2ecc71'}">${s.risk_score||0}</td></tr>`).join('')}</table>
-        `;
-      }catch(e){document.getElementById('adminContent').innerHTML='<span class="close-btn" onclick="document.getElementById(\'adminModal\').classList.remove(\'active\')">&times;</span><h2>👑 ADMIN PANEL</h2><p style="color:#e63946;">Failed to load admin data.</p>';}
+        document.getElementById('adminContent').innerHTML=`<span class="close-btn" onclick="document.getElementById('adminModal').classList.remove('active')">&times;</span><h2>👑 ADMIN PANEL</h2><p style="color:#999;font-family:var(--font-mono);font-size:10px;">Admin: <strong style="color:#ffd700;">${user}</strong></p><div class="admin-stats"><div class="admin-stat"><div class="number">${users.length}</div><div class="label">Users</div></div><div class="admin-stat"><div class="number">${scans.length}</div><div class="label">Scans</div></div><div class="admin-stat"><div class="number">${scans.filter(s=>s.status==='running').length}</div><div class="label">Active</div></div><div class="admin-stat"><div class="number">${scans.reduce((a,s)=>a+(s.vulns_count||0),0)}</div><div class="label">Vulns</div></div></div><h3 style="color:#ffd700;margin-top:15px;">👥 Users</h3><table class="admin-table"><tr><th>ID</th><th>Username</th><th>Email</th><th>Status</th><th>Scans</th><th>Actions</th></tr>${users.map(u=>`<tr><td>#${u.id}</td><td>${u.username} ${u.is_admin?'<span class="admin-badge admin">ADMIN</span>':''}</td><td style="font-size:10px;">${u.email}</td><td><span class="admin-badge ${u.is_active?'active':'inactive'}">${u.is_active?'Active':'Off'}</span></td><td>${scans.filter(s=>s.user_id===u.id).length}</td><td>${u.username!==user?`<button class="admin-btn-sm danger" onclick="deleteUser(${u.id})">Del</button>`:'-'}</td></tr>`).join('')}</table><h3 style="color:#ffd700;margin-top:15px;">📊 Recent Scans</h3><table class="admin-table"><tr><th>ID</th><th>Target</th><th>User</th><th>Status</th><th>Risk</th></tr>${scans.slice(0,10).map(s=>`<tr><td>#${s.id}</td><td>${s.target}</td><td style="color:#ffd700;">${users.find(u=>u.id===s.user_id)?.username||'?'}</td><td style="color:${s.status==='completed'?'#2ecc71':'#f39c12'}">${s.status}</td><td style="color:${s.risk_score>50?'#e63946':'#2ecc71'}">${s.risk_score||0}</td></tr>`).join('')}</table>`;
+      }catch(e){document.getElementById('adminContent').innerHTML='<span class="close-btn" onclick="document.getElementById(\'adminModal\').classList.remove(\'active\')">&times;</span><h2>👑 ADMIN PANEL</h2><p style="color:#e63946;">Failed to load.</p>';}
     }
 
-    async function deleteUser(id){
-      if(!confirm('Delete this user and ALL scans?'))return;
-      try{
-        const r=await fetch(`${API}/admin/users/${id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});
-        if(r.ok){toast('User deleted','success');showAdminPanel();}else toast('Failed','error');
-      }catch(e){toast('Error','error');}
-    }
+    async function deleteUser(id){if(!confirm('Delete user and all scans?'))return;try{const r=await fetch(`${API}/admin/users/${id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});if(r.ok){toast('Deleted','success');showAdminPanel();}else toast('Failed','error');}catch(e){toast('Error','error');}}
 
-    function scrollToSection(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});}
     document.getElementById('targetInput').addEventListener('keypress',e=>{if(e.key==='Enter')document.getElementById('scanButton').click();});
     document.getElementById('authModal').addEventListener('click',e=>{if(e.target===document.getElementById('authModal'))closeAuthModal();});
     document.getElementById('reportModal').addEventListener('click',e=>{if(e.target===document.getElementById('reportModal'))document.getElementById('reportModal').classList.remove('active');});
     document.getElementById('adminModal').addEventListener('click',e=>{if(e.target===document.getElementById('adminModal'))document.getElementById('adminModal').classList.remove('active');});
 
+    setupTerminalInput();
     updateUI();
-    console.log('%c🤖 Mr. Robot %c| %cDashboard Live %c| %cAdmin: pog', 'font-size:18px;', 'color:#e63946;', 'color:#2ecc71;', 'color:#fff;', 'color:#ffd700;');
+    console.log('%c🤖 Mr. Robot %c| %cInteractive Terminal %c| %cAdmin: pog', 'font-size:18px;', 'color:#e63946;', 'color:#2ecc71;', 'color:#fff;', 'color:#ffd700;');
   </script>
 </body>
 </html>
