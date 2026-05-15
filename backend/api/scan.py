@@ -1,6 +1,6 @@
 """
 Mr. Robot Scanner - Scan API
-Handles scan requests and result retrieval.
+Handles scan requests, result retrieval, and admin endpoints.
 """
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -120,6 +120,8 @@ def run_full_scan_sync(scan_id: int, target: str, session_factory):
     finally:
         db.close()
 
+
+# ============ USER SCAN ENDPOINTS ============
 
 @router.post("/scan", response_model=dict)
 async def start_scan(
@@ -256,3 +258,100 @@ async def get_dashboard_stats(
         low_count=sum(1 for v in all_vulns if v.get("severity") == "low"),
         average_risk_score=sum(s.risk_score or 0 for s in scans) / total if total > 0 else 0
     )
+
+
+# ============ ADMIN ENDPOINTS ============
+
+@router.get("/admin/users")
+async def admin_get_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Admin: Get all users"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    users = db.query(User).all()
+    return [
+        {
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "is_active": u.is_active,
+            "is_admin": u.is_admin,
+            "created_at": u.created_at.isoformat() if u.created_at else None,
+            "last_login": u.last_login.isoformat() if u.last_login else None
+        }
+        for u in users
+    ]
+
+
+@router.get("/admin/scans")
+async def admin_get_all_scans(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Admin: Get all scans"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    scans = db.query(Scan).order_by(Scan.created_at.desc()).limit(50).all()
+    return [
+        {
+            "id": s.id,
+            "user_id": s.user_id,
+            "target": s.target,
+            "status": s.status,
+            "progress": s.progress,
+            "risk_score": s.risk_score,
+            "ports_count": s.ports_count,
+            "vulns_count": s.vulns_count,
+            "created_at": s.created_at.isoformat() if s.created_at else None
+        }
+        for s in scans
+    ]
+
+
+@router.get("/admin/users/{user_id}/scans")
+async def admin_get_user_scans(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Admin: Get scans for a specific user"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    scans = db.query(Scan).filter(Scan.user_id == user_id).order_by(Scan.created_at.desc()).all()
+    return [
+        ScanResponse(
+            id=s.id, target=s.target, status=s.status, progress=s.progress,
+            risk_score=s.risk_score, ports=s.ports_data or [],
+            technologies=s.technologies_data or [], vulnerabilities=s.vulnerabilities_data or [],
+            subdomains=s.subdomains_data or [], ssl_info=s.ssl_data or {},
+            headers_info=s.headers_data or {}, started_at=s.started_at,
+            completed_at=s.completed_at, duration_seconds=s.duration_seconds,
+            error_message=s.error_message, created_at=s.created_at
+        ) for s in scans
+    ]
+
+
+@router.delete("/admin/users/{user_id}")
+async def admin_delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Admin: Delete a user and all their scans"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    if current_user.id == user_id:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    username = user.username
+    db.query(Scan).filter(Scan.user_id == user_id).delete()
+    db.delete(user)
+    db.commit()
+    
+    return {"message": f"User '{username}' and all their scans deleted"}
