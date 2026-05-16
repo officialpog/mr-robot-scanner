@@ -1,0 +1,14 @@
+{
+  "name": "mr-robot-scanner-frontend",
+  "version": "1.0.0",
+  "description": "Mr. Robot Scanner - Advanced Vulnerability Intelligence Platform",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'No build step required for vanilla HTML'",
+    "lint": "echo 'No linter configured'"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.4.1"
+  }
+}
