@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReconScope • Security Assessment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #0a0e14;
+      --bg-secondary: #111820;
+      --bg-tertiary: #0d1117;
+      --accent-green: #00ff41;
+      --accent-blue: #00d4ff;
+      --danger-red: #ff2d55;
+      --warning-orange: #ff9500;
+      --warning-yellow: #ffcc00;
+      --text-primary: #e6edf3;
+      --text-secondary: #b1bbc6;
+      --text-muted: #a1adba;
+      --border-color: #21262d;
+      --border-glow: rgba(0, 255, 65, 0.15);
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    #matrix-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      opacity: 0.06;
+      pointer-events: none;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-green); border-radius: 3px; }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 28px;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--accent-green);
+      text-shadow: 0 0 20px rgba(0,255,65,0.4);
+      letter-spacing: 3px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .logo-icon {
+      font-size: 22px;
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.05); }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-links button:not(.btn-neon) {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+      padding: 6px 0;
+      cursor: pointer;
+    }
+
+    .nav-links button:not(.btn-neon):hover, .nav-links button:not(.btn-neon).active {
+      color: var(--accent-green);
+      text-shadow: 0 0 10px rgba(0,255,65,0.4);
+    }
+
+    .nav-links button:not(.btn-neon)::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 2px;
+      background: var(--accent-green);
+      transition: width 0.3s;
+      box-shadow: 0 0 8px var(--accent-green);
+    }
+
+    .nav-links button:not(.btn-neon):hover::after, .nav-links button:not(.btn-neon).active::after {
+      width: 100%;
+    }
+
+    .btn-neon {
+      border: 1.5px solid var(--accent-green);
+      background: rgba(0,255,65,0.06);
+      color: var(--accent-green);
+      padding: 8px 20px;
+      border-radius: 24px;
+      font-weight: 600;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 12px;
+    }
+
+    .btn-neon:hover {
+      background: var(--accent-green);
+      color: var(--bg-primary);
+      box-shadow: 0 0 25px rgba(0,255,65,0.5);
+    }
+
+    .hero {
+      margin-top: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,255,65,0.08);
+      border: 1px solid rgba(0,255,65,0.2);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent-green);
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 48px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+
+    .hero .highlight {
+      color: var(--accent-green);
+      text-shadow: 0 0 30px rgba(0,255,65,0.5), 0 0 60px rgba(0,255,65,0.2);
+    }
+
+    .hero-subtitle {
+      color: var(--text-secondary);
+      max-width: 560px;
+      font-size: 16px;
+      margin-bottom: 36px;
+    }
+
+    .scan-box {
+      margin: 0 auto 28px;
+      display: flex;
+      max-width: 640px;
+      width: 100%;
+      background: var(--bg-secondary);
+      border: 1.5px solid var(--border-color);
+      border-radius: 50px;
+      overflow: hidden;
+      box-shadow: 0 0 25px rgba(0,255,65,0.1);
+      transition: all 0.3s;
+    }
+
+    .scan-box:focus-within {
+      border-color: var(--accent-green);
+      box-shadow: 0 0 35px rgba(0,255,65,0.2);
+    }
+
+    .scan-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 16px 24px;
+      font-size: 15px;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      min-width: 180px;
+    }
+
+    .scan-box input::placeholder { color: var(--text-muted); }
+
+    .scan-btn {
+      background: linear-gradient(135deg, var(--accent-green), #00cc33);
+      border: none;
+      padding: 0 32px;
+      font-weight: 700;
+      font-family: 'Orbitron', sans-serif;
+      color: var(--bg-primary);
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 1.5px;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .scan-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #00ff55, #00dd44);
+      box-shadow: 0 0 35px rgba(0,255,65,0.5);
+      transform: scale(1.02);
+    }
+
+    .scan-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .scan-btn.scanning {
+      animation: glowPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 15px rgba(0,255,65,0.3); }
+      50% { box-shadow: 0 0 40px rgba(0,255,65,0.6); }
+    }
+
+    .mode-toggle {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    .mode-btn {
+      padding: 6px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+
+    .mode-btn.active {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      background: rgba(0,255,65,0.08);
+    }
+
+    .mode-btn.local-only {
+      border-color: var(--warning-orange);
+      color: var(--warning-orange);
+    }
+
+    .terminal-wrapper {
+      max-width: 720px;
+      margin: 0 auto 36px;
+      width: 100%;
+    }
+
+    .terminal {
+      background: #070a0f;
+      border: 1px solid rgba(0,255,65,0.2);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0,255,65,0.08), inset 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    .terminal-header {
+      background: #0d1117;
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      align-items: center;
+    }
+
+    .terminal-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .terminal-dot.red { background: #ff5f56; }
+    .terminal-dot.yellow { background: #ffbd2e; }
+    .terminal-dot.green { background: #27c93f; }
+
+    .terminal-title {
+      margin-left: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .terminal-body {
+      padding: 16px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: var(--accent-green);
+      min-height: 140px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .terminal-line {
+      display: flex;
+      gap: 8px;
+      margin: 3px 0;
+      opacity: 0;
+      animation: termFade 0.25s forwards;
+      word-break: break-word;
+    }
+
+    @keyframes termFade { to { opacity: 1; } }
+
+    .prompt { color: var(--accent-blue); white-space: nowrap; flex-shrink: 0; }
+    .text-success { color: #00ff41; }
+    .text-info { color: #00d4ff; }
+    .text-warning { color: #ffcc00; }
+    .text-danger { color: #ff2d55; }
+    .text-muted { color: var(--text-muted); }
+    .text-white { color: #e6edf3; }
+
+    .cursor-blink {
+      display: inline-block;
+      width: 7px; height: 15px;
+      background: var(--accent-green);
+      margin-left: 3px;
+      vertical-align: middle;
+      animation: blink 1.1s step-end infinite;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 18px;
+      margin: 40px 0;
+    }
+
+    .risk-card {
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      padding: 22px 16px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .risk-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .risk-card.low::before { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); }
+    .risk-card.medium::before { background: var(--warning-yellow); box-shadow: 0 0 15px var(--warning-yellow); }
+    .risk-card.high::before { background: var(--warning-orange); box-shadow: 0 0 15px var(--warning-orange); }
+    .risk-card.critical::before { background: var(--danger-red); box-shadow: 0 0 15px var(--danger-red); }
+
+    .risk-card i { font-size: 28px; margin-bottom: 10px; }
+    .risk-card h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+      color: var(--text-secondary);
+    }
+    .risk-count {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin: 50px 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: 2px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(0,255,65,0.4), transparent);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card {
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s;
+    }
+
+    .chart-card h4 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .port-item, .dns-item, .whois-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+      margin: 4px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+    }
+
+    .port-item span:first-child, .dns-item span:first-child {
+      color: var(--text-secondary);
+    }
+
+    .status-open { color: #00ff41; font-weight: 600; }
+    .status-filtered { color: #ff9500; }
+    .status-closed { color: #ff2d55; }
+
+    .progress-bar {
+      height: 6px;
+      background: #1c2128;
+      border-radius: 3px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.8s ease;
+      width: 0%;
+    }
+
+    .tech-tag {
+      display: inline-block;
+      background: rgba(0,255,65,0.08);
+      border: 1px solid rgba(0,255,65,0.15);
+      padding: 3px 10px;
+      border-radius: 10px;
+      margin: 3px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-green);
+    }
+
+    .ssl-good { color: #00ff41; }
+    .ssl-bad { color: #ff2d55; }
+    .ssl-warn { color: #ffcc00; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 30px 0;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      background: var(--bg-secondary);
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      transition: all 0.3s;
+      cursor: default;
+    }
+
+    .feature-item:hover {
+      border-color: var(--accent-green);
+      box-shadow: 0 0 15px rgba(0,255,65,0.08);
+    }
+
+    .feature-item i { font-size: 16px; }
+
+    .feature-item.disabled {
+      opacity: 0.4;
+      border-color: var(--text-muted);
+    }
+
+    .feature-item.disabled i { color: var(--text-muted) !important; }
+
+    .footer {
+      margin-top: 60px;
+      padding: 30px 0;
+      text-align: center;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .footer p { margin: 4px 0; }
+    .footer .legal {
+      color: var(--danger-red);
+      font-size: 11px;
+      margin-top: 10px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: var(--bg-secondary);
+      border: 1px solid var(--accent-green);
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent-green);
+      box-shadow: 0 0 25px rgba(0,255,65,0.2);
+      animation: slideIn 0.3s ease;
+      display: none;
+      max-width: 360px;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 32px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    .modal h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: var(--accent-green);
+    }
+
+    .modal input {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      margin-bottom: 14px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .modal input:focus { border-color: var(--accent-green); }
+
+    .modal-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent-green);
+      border: none;
+      border-radius: 10px;
+      color: var(--bg-primary);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 1px;
+    }
+
+    .modal-btn:hover { box-shadow: 0 0 20px rgba(0,255,65,0.4); }
+
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .modal-close:hover { color: var(--danger-red); }
+
+    @media (max-width: 768px) {
+      .container { padding: 0 16px; }
+      .hero h1 { font-size: 32px; letter-spacing: 2px; }
+      .scan-box { flex-direction: column; border-radius: 20px; }
+      .scan-btn { padding: 14px; justify-content: center; border-radius: 0 0 20px 20px; }
+      .scan-box input { padding: 14px 18px; }
+      .navbar { flex-direction: column; gap: 12px; }
+      .nav-links { gap: 16px; }
+      .risk-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .section-content { display: none; }
+    .section-content.active { display: block; }
+    /* Quiet surfaces keep color focused on actions and finding severity. */
+    .logo, .hero .highlight, .nav-links button { text-shadow: none !important; }
+    .logo, .nav-links button:not(.btn-neon) { background: none; border: 0; font: inherit; }
+    .logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; }
+    .logo-icon, .cursor-blink, .scan-btn.scanning { animation: none; }
+    .scan-box, .scan-box:focus-within, .terminal, .btn-neon:hover, .scan-btn:hover:not(:disabled), .toast,
+    .feature-item:hover, .modal-btn:hover, .risk-card::before, .nav-links button::after { box-shadow: none; }
+    .scan-btn:hover:not(:disabled) { transform: none; }
+    .terminal { border-color: var(--border-color); }
+    .terminal-body { color: var(--text-secondary); }
+    .terminal-line { opacity: 1; animation: none; }
+    .hero-badge, .mode-btn.active { color: var(--text-secondary); background: var(--bg-secondary); border-color: var(--border-color); }
+    .hero-badge i { color: var(--text-muted) !important; }
+    .hero .highlight { color: var(--text-primary); }
+    .footer .legal { color: var(--text-muted); }
+    .footer p { opacity: 1 !important; }
+    .section-title, .chart-card h3 { font-family: 'Inter', sans-serif; letter-spacing: 0; }
+    .section-title span, .section-title i { color: var(--text-primary) !important; }
+    .risk-grid { margin: 24px 0; gap: 12px; }
+    .risk-card { padding: 14px; border-radius: 10px; text-align: left; }
+    .risk-card i { display: none; }
+    .risk-card::before { box-shadow: none !important; }
+    .risk-card.low::before { background: var(--text-secondary); }
+    .risk-card.low .risk-count { color: var(--text-primary); }
+    :focus-visible { outline: 3px solid var(--accent-blue) !important; outline-offset: 4px; }
+    .skip-link { position: absolute; top: -100px; left: 16px; z-index: 2000; background: var(--bg-secondary); color: var(--text-primary); padding: 12px; }
+    .skip-link:focus { top: 10px; }
+    .auth-switch { margin-top: 14px; border: 0; background: none; color: var(--accent-blue); text-decoration: underline; cursor: pointer; padding: 8px 0; }
+    .history-open { color: var(--text-primary); background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 14px; border-radius: 8px; width: 100%; cursor: pointer; text-align: left; margin: 6px 0; font: inherit; }
+    .target-label { width: min(100%, 640px); text-align: left; font-weight: 600; }
+    #targetHelp { width: min(100%, 640px); text-align: left; font-size: 13px; margin: 6px 0 12px; }
+    label { display: block; margin-bottom: 6px; }
+    .modal-close { border: 0; background: transparent; padding: 8px; }
+    #loginError { color: #ff8597; margin-top: 12px; }
+    .results-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-top: 36px; }
+    .results-header h1 { font-size: clamp(24px, 4vw, 36px); overflow-wrap: anywhere; }
+    .eyebrow { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; }
+    .coverage-note { padding: 12px 0; color: var(--text-secondary); }
+    .content-heading { font-size: 20px; margin: 28px 0 6px; }
+    .check-heading { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .check-heading h3 { font-size: 16px; }
+    .check-badge { display: inline-block; border: 1px solid var(--border-color); border-radius: 6px; padding: 3px 9px; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+    .check-badge[data-state="completed"] { color: #a1adba; }
+    .check-badge[data-state="failed"] { color: #ff8597; border-color: #7d3844; }
+    .check-badge[data-state="inconclusive"] { color: #efd282; border-color: #70613e; }
+    .charts-grid { margin-top: 18px; }
+    .chart-card { border-radius: 10px; min-width: 0; }
+    .whois-item, .dns-item { gap: 16px; align-items: flex-start; padding: 8px; font-size: 13px; }
+    .whois-item span:last-child, .dns-item span:last-child { overflow-wrap: anywhere; min-width: 0; text-align: right; }
+    .tech-tag { color: var(--text-primary); border-color: var(--border-color); background: var(--bg-tertiary); font-size: 13px; }
+    .findings-list { margin: 20px 0 32px; }
+    .finding { border: 1px solid var(--border-color); border-radius: 10px; margin: 10px 0; background: var(--bg-secondary); }
+    .finding summary { cursor: pointer; padding: 16px; font-weight: 600; overflow-wrap: anywhere; }
+    .finding summary .check-badge { margin-right: 10px; }
+    .finding-body { padding: 0 20px 20px; }
+    .finding-body h4 { margin: 16px 0 5px; font-size: 14px; }
+    .finding-body p, .finding-body pre { color: var(--text-secondary); font-size: 14px; }
+    .finding-body pre { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg-primary); padding: 12px; border-radius: 6px; }
+    .severity-critical { color: #ff8597; } .severity-high { color: #ffc17a; }
+    .severity-medium { color: #efd282; } .severity-low, .severity-info { color: var(--text-secondary); }
+    .empty-state { padding: 20px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-secondary); }
+    @media (max-width: 600px) { .results-header { flex-direction: column; } .charts-grid { grid-template-columns: minmax(0, 1fr); } .nav-links { justify-content: center; } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#section-scanner">Skip to scanner</a>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle" aria-describedby="loginHelp">
+      <form id="loginForm">
+      <button type="button" class="modal-close" onclick="closeModal()" aria-label="Close login"><i class="fas fa-times" aria-hidden="true"></i></button>
+      <h3 id="loginTitle">Log in to scan</h3>
+      <label for="loginUser">Username</label>
+      <input type="text" id="loginUser" autocomplete="username" required>
+      <div id="registerEmail" hidden><label for="loginEmail">Email</label><input type="email" id="loginEmail" autocomplete="email" maxlength="100"></div>
+      <label for="loginPass">Password</label>
+      <input type="password" id="loginPass" autocomplete="current-password" required>
+      <button type="submit" class="modal-btn" id="loginSubmit">Log in</button>
+      <p id="loginError" role="alert"></p>
+      <button type="button" class="auth-switch" id="authSwitch" onclick="setAuthMode(authMode === 'login' ? 'register' : 'login')">Create an account</button>
+      <p id="loginHelp" style="margin-top: 14px; color: var(--text-muted);">
+        Log in to access your saved assessments.
+      </p>
+      </form>
+    </div>
+  </div>
+
+  <div class="container" id="appContent">
+    <nav class="navbar" aria-label="Main navigation">
+      <button class="logo" onclick="showSection('scanner')" aria-label="Mr. Robot scanner home">
+        <i class="fas fa-robot logo-icon"></i> ReconScope
+      </button>
+      <div class="nav-links">
+        <button class="active" aria-current="page" onclick="showSection('scanner')" id="nav-scanner"><i class="fas fa-search"></i> Scanner</button>
+        <button onclick="showSection('dashboard')" id="nav-dashboard"><i class="fas fa-th-large"></i> Dashboard</button>
+        <button onclick="showSection('history')" id="nav-history"><i class="fas fa-history"></i> History</button>
+        <button onclick="showSection('reports')" id="nav-reports"><i class="fas fa-file-alt"></i> Reports</button>
+        <button class="btn-neon" id="loginBtn" onclick="openModal()">
+          <i class="fas fa-user-secret"></i> <span id="authText">Login</span>
+        </button>
+      </div>
+    </nav>
+
+    <main>
+    <div class="section-content active" id="section-scanner" tabindex="-1">
+      <div class="hero">
+        <div class="hero-badge">
+          <i class="fas fa-circle" style="font-size: 5px; color: #00ff41;"></i>
+          <span id="versionText">v2.0.0</span> • <span id="modeText">Lightweight Recon</span>
+        </div>
+        <h1>DISCOVER.<br><span class="highlight">ASSESS. UNDERSTAND.</span></h1>
+        <p class="hero-subtitle">
+          Assess domains and internet-facing services. Review collected evidence, understand weaknesses, and plan your next fix.
+        </p>
+
+        <div class="mode-toggle">
+          <span style="color: var(--text-muted);">MODE:</span>
+          <button class="mode-btn active" id="modeLight" onclick="setMode('light')">
+            <i class="fas fa-cloud"></i> LIGHT (API)
+          </button>
+          <button class="mode-btn local-only" id="modeLocal" onclick="setMode('local')" style="display:none;">
+            <i class="fas fa-terminal"></i> LOCAL (Nmap)
+          </button>
+        </div>
+
+        <label class="target-label" for="targetInput">Domain or IP address</label>
+        <p id="targetHelp" class="text-muted">Enter a host without a URL path or port. Terminal commands such as help also work.</p>
+        <div class="scan-box">
+          <input type="text" id="targetInput" aria-describedby="targetHelp" spellcheck="false" autocapitalize="none" placeholder="Enter domain or IP..." value="example.com">
+          <button id="scanButton" class="scan-btn"><i class="fas fa-search"></i> SCAN</button>
+        </div>
+
+        <div class="terminal-wrapper">
+          <div class="terminal">
+            <div class="terminal-header">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">reconscope@scanner:~#</span>
+            </div>
+            <div class="terminal-body" id="terminalBody">
+              <div class="terminal-line" style="opacity:1;">
+                <span class="prompt">~#</span>
+                <span class="text-muted">ReconScope ready. Type 'help' or enter a target above.</span>
+                <span class="cursor-blink"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-content" id="section-dashboard" tabindex="-1">
+      <header class="results-header">
+        <div><p class="eyebrow">Scan results</p><h1 id="scanTarget">No target scanned</h1><p id="scanTime" class="text-muted">Run a scan to collect observations.</p></div>
+        <p id="scanStatus" class="check-badge" role="status">Not started</p>
+      </header>
+      <p id="scanCoverage" class="coverage-note">Check status describes data collection, not whether a target is secure.</p>
+      <h2 class="content-heading">Findings to review</h2>
+      <p class="text-muted">Passive observations need context. Severity reflects the current analyzer rules.</p>
+
+      <div class="risk-grid">
+        <div class="risk-card critical">
+          <i class="fas fa-skull-crossbones" style="color: #ff2d55;"></i>
+          <h3>CRITICAL</h3>
+          <div class="risk-count" id="criticalCount">--</div>
+        </div>
+        <div class="risk-card high">
+          <i class="fas fa-radiation" style="color: #ff9500;"></i>
+          <h3>HIGH</h3>
+          <div class="risk-count" id="highCount">--</div>
+        </div>
+        <div class="risk-card medium">
+          <i class="fas fa-exclamation-triangle" style="color: #ffcc00;"></i>
+          <h3>MEDIUM</h3>
+          <div class="risk-count" id="mediumCount">--</div>
+        </div>
+        <div class="risk-card low">
+          <i class="fas fa-check-circle" style="color: #00ff41;"></i>
+          <h3>LOW</h3>
+          <div class="risk-count" id="lowCount">--</div>
+        </div>
+      </div>
+
+      <p class="text-muted" id="infoCount">0 informational observations</p>
+      <div id="findingsList" class="findings-list"><p class="empty-state">No scan results yet.</p></div>
+      <h2 class="content-heading">Collected data</h2>
+      <p class="text-muted">Evidence from each check, including incomplete and failed checks.</p>
+      <div class="charts-grid">
+        <section class="chart-card" aria-labelledby="whoisHeading">
+          <div class="check-heading"><h3 id="whoisHeading">WHOIS</h3><span id="whoisStatus" class="check-badge">Not started</span></div>
+          <div id="whoisList"><p class="text-muted">No data collected.</p></div>
+        </section>
+        <section class="chart-card" aria-labelledby="dnsHeading">
+          <div class="check-heading"><h3 id="dnsHeading">DNS records</h3><span id="dnsStatus" class="check-badge">Not started</span></div>
+          <div id="dnsList"><p class="text-muted">No data collected.</p></div>
+        </section>
+        <section class="chart-card" aria-labelledby="sslHeading">
+          <div class="check-heading"><h3 id="sslHeading">TLS connection</h3><span id="sslStatus" class="check-badge">Not started</span></div>
+          <div id="sslList"><p class="text-muted">No data collected.</p></div>
+        </section>
+        <section class="chart-card" aria-labelledby="headersHeading">
+          <div class="check-heading"><h3 id="headersHeading">HTTP security headers</h3><span id="headersStatus" class="check-badge">Not started</span></div>
+          <div id="headersList"><p class="text-muted">No data collected.</p></div>
+        </section>
+        <section class="chart-card" aria-labelledby="techHeading">
+          <div class="check-heading"><h3 id="techHeading">Technology hints</h3><span id="techStatus" class="check-badge">Not started</span></div>
+          <div id="techList"><p class="text-muted">No data collected.</p></div>
+        </section>
+      </div>
+    </div>
+
+    <div class="section-content" id="section-history" tabindex="-1">
+      <div class="section-title">
+        <i class="fas fa-history" style="color: var(--accent-green);"></i>
+        <span style="color: var(--accent-green);">SCAN HISTORY</span>
+      </div>
+      <div class="chart-card" id="historyList">
+        <p class="text-muted" style="font-size: 13px;">No scan history yet. Run your first scan!</p>
+      </div>
+    </div>
+
+    <div class="section-content" id="section-reports" tabindex="-1">
+      <div class="section-title">
+        <i class="fas fa-file-alt" style="color: var(--accent-green);"></i>
+        <span style="color: var(--accent-green);">REPORTS</span>
+      </div>
+      <div class="chart-card" id="reportsList">
+        <p class="text-muted" style="font-size: 13px;">No reports generated yet. Complete a scan to generate a report.</p>
+      </div>
+    </div>
+
+    </main>
+    <div class="footer">
+      <p>ReconScope — Security Assessment</p>
+      <p style="margin-top: 6px; opacity: 0.6;">
+        <i class="fas fa-shield-alt"></i> WHOIS • DNS • SSL • Headers • Tech Detection
+      </p>
+      <p class="legal">
+        <i class="fas fa-exclamation-triangle"></i> 
+        Only scan systems you own or have explicit written permission to test. Unauthorized scanning is illegal.
+      </p>
+    </div>
+  </div>
+
+  <script>
+
+    // ============ CONFIG ============
+    const API_URL = !window.location.hostname || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8000'
+      : 'https://your-render-backend.onrender.com'; // CHANGE THIS
+
+    const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let currentMode = 'light';
+    let isScanning = false;
+    let authToken = localStorage.getItem('mrrobot_token') || null;
+    if (authToken?.startsWith('demo-token-')) { authToken = null; localStorage.removeItem('mrrobot_token'); }
+    let scanHistory = [];
+    let authEpoch = 0;
+    let lastScanResult = null;
+
+    // ============ UI HELPERS ============
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.borderColor = type === 'success' ? '#00ff41' : type === 'error' ? '#ff2d55' : '#00d4ff';
+      toast.style.color = type === 'success' ? '#00ff41' : type === 'error' ? '#ff2d55' : '#00d4ff';
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    }
+
+    function addTerm(text, cls = '') {
+      const body = document.getElementById('terminalBody');
+      const line = document.createElement('div');
+      line.className = 'terminal-line ' + cls;
+      const template = document.createElement('template');
+      template.innerHTML = text;
+      for (const element of [...template.content.querySelectorAll('*')]) {
+        if (!['SPAN', 'STRONG'].includes(element.tagName)) {
+          element.replaceWith(document.createTextNode(element.textContent));
+        } else {
+          for (const attr of [...element.attributes]) {
+            if (attr.name !== 'class') element.removeAttribute(attr.name);
+          }
+        }
+      }
+      line.appendChild(template.content);
+      body.appendChild(line);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function clearTerm() {
+      document.getElementById('terminalBody').innerHTML = '';
+    }
+
+    function sleep(ms) {
+      return new Promise(r => setTimeout(r, ms));
+    }
+
+    // ============ NAVIGATION ============
+    function showSection(name) {
+      document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-links button:not(.btn-neon)').forEach(a => a.classList.remove('active'));
+      document.getElementById('section-' + name).classList.add('active');
+      document.getElementById('nav-' + name).classList.add('active');
+      document.querySelectorAll('.nav-links button[id^="nav-"]').forEach(button => {
+        if (button.id === 'nav-' + name) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+      });
+      document.getElementById('section-' + name).focus();
+      if (name === 'history') renderHistory();
+      if (name === 'reports') renderReports();
+    }
+
+    // ============ MODE ============
+    function setMode(mode) {
+      if (mode !== 'light') { showToast('Local tools are not implemented', 'error'); return; }
+      currentMode = mode;
+      document.getElementById('modeLight').classList.toggle('active', mode === 'light');
+      document.getElementById('modeLocal').classList.toggle('active', mode === 'local');
+      document.getElementById('modeText').textContent = mode === 'light' ? 'Lightweight Recon' : 'Local Full Scan';
+      showToast('Mode: ' + (mode === 'light' ? 'Lightweight Recon (API)' : 'Local Full Scan (Nmap)'), 'info');
+    }
+
+    // ============ AUTH ============
+    let authMode = 'login';
+    function setAuthMode(mode) {
+      authMode = mode;
+      const register = mode === 'register';
+      document.getElementById('loginTitle').textContent = register ? 'Create your account' : 'Log in to scan';
+      document.getElementById('registerEmail').hidden = !register;
+      document.getElementById('loginEmail').required = register;
+      document.getElementById('loginPass').autocomplete = register ? 'new-password' : 'current-password';
+      document.getElementById('loginPass').minLength = register ? 8 : 0;
+      document.getElementById('loginSubmit').textContent = register ? 'Create account' : 'Log in';
+      document.getElementById('authSwitch').textContent = register ? 'Already registered? Log in' : 'Create an account';
+      document.getElementById('loginHelp').textContent = register ? 'Use 1–50 letters, numbers, dots, underscores or hyphens for your username. Password: at least 8 characters, at most 72 UTF-8 bytes.' : 'Use the username and password you registered with. First visit? Choose Create an account.';
+      document.getElementById('loginError').textContent = '';
+    }
+    let modalReturnFocus = null;
+    function openModal() {
+      if (authToken) { logout(); return; }
+      setAuthMode('login');
+      modalReturnFocus = document.activeElement;
+      document.getElementById('appContent').inert = true;
+      document.getElementById('loginError').textContent = '';
+      document.getElementById('loginModal').classList.add('active');
+      document.getElementById('loginUser').focus();
+    }
+
+    function closeModal() {
+      document.getElementById('loginModal').classList.remove('active');
+      document.getElementById('appContent').inert = false;
+      document.getElementById('loginPass').value = '';
+      modalReturnFocus?.focus();
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', event => { event.preventDefault(); handleLogin(); });
+    document.getElementById('loginModal').addEventListener('keydown', event => {
+      if (event.key === 'Escape') { event.preventDefault(); closeModal(); }
+      if (event.key !== 'Tab') return;
+      const controls = [...document.getElementById('loginModal').querySelectorAll('button:not(:disabled), input')].filter(el => !el.closest('[hidden]'));
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+
+    async function handleLogin() {
+      const submit = document.getElementById('loginSubmit');
+      if (submit.disabled) return;
+      submit.disabled = true;
+      document.getElementById('loginError').textContent = '';
+      const user = document.getElementById('loginUser').value;
+      const pass = document.getElementById('loginPass').value;
+      const mode = authMode;
+      document.getElementById('authSwitch').disabled = true;
+      try {
+        const res = await fetch(`${API_URL}/api/auth/${mode}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: user, password: pass, ...(mode === 'register' ? { email: document.getElementById('loginEmail').value } : {}) })
+        });
+        const data = await res.json();
+        if (res.ok && data.access_token) {
+          clearAccountView();
+          authEpoch++;
+          authToken = data.access_token;
+          localStorage.setItem('mrrobot_token', authToken);
+          document.getElementById('authText').textContent = 'Logout';
+          closeModal();
+          showToast('Authenticated successfully', 'success');
+        } else {
+          document.getElementById('loginError').textContent = mode === 'login' && res.status === 401 ? 'Invalid username or password. Use your registered username (not your email). If you have not registered yet, choose Create an account.' : typeof data.detail === 'string' ? data.detail : Array.isArray(data.detail) ? data.detail.map(item => `${item.loc?.slice(-1)[0] || 'Field'}: ${item.msg}`).join('; ') : 'Authentication failed';
+        }
+      } catch (e) {
+        document.getElementById('loginError').textContent = 'Cannot reach the backend. Check the API address and server.';
+      } finally { submit.disabled = false; document.getElementById('authSwitch').disabled = false; }
+    }
+
+    function clearAccountView() {
+      scanHistory = []; lastScanResult = null;
+      clearTerm();
+      document.getElementById('loginBtn').removeAttribute('aria-label');
+      document.getElementById('historyList').textContent = 'Log in to view your saved assessments.';
+      document.getElementById('reportsList').textContent = 'Select a saved assessment from History to view its report.';
+      updateDashboard({});
+    }
+
+    function logout() {
+      authEpoch++;
+      clearAccountView();
+      authToken = null;
+      localStorage.removeItem('mrrobot_token');
+      document.getElementById('authText').textContent = 'Login';
+      document.getElementById('loginBtn').removeAttribute('aria-label');
+      showToast('Logged out', 'info');
+    }
+
+    if (authToken) {
+      document.getElementById('authText').textContent = 'Logout';
+    }
+
+    // ============ TERMINAL COMMANDS ============
+    const targetInput = document.getElementById('targetInput');
+    targetInput.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const cmd = targetInput.value.trim();
+      if (/^(?:\.\/|\/)?(?:help|scan|status|history|clear|cls|whoami|date|echo)(?:\s|$)/i.test(cmd)) {
+        handleTerminalCommand(cmd);
+      } else {
+        document.getElementById('scanButton').click();
+      }
+    });
+
+    async function handleTerminalCommand(cmd) {
+      const parts = cmd.toLowerCase().split(' ');
+      const command = parts[0].replace(/^(?:\.\/|\/)/, '');
+      const args = parts.slice(1).join(' ');
+
+      addTerm(`<span class="prompt">~#</span> <span class="text-white">${cmd}</span>`);
+
+      switch (command) {
+        case 'help':
+          addTerm(`<span class="text-success">═══ Mr. Robot Commands ═══</span>`);
+          addTerm(`<span class="text-warning">help</span>              - Show this help`);
+          addTerm(`<span class="text-warning">scan &lt;target&gt;</span>     - Start reconnaissance scan`);
+          addTerm(`<span class="text-warning">status</span>            - Show system status`);
+          addTerm(`<span class="text-warning">history</span>           - Show scan history`);
+          addTerm(`<span class="text-warning">clear / cls</span>       - Clear terminal`);
+          addTerm(`<span class="text-warning">whoami</span>            - Current user`);
+          addTerm(`<span class="text-warning">date</span>              - Current date/time`);
+          addTerm(`<span class="text-warning">echo &lt;text&gt;</span>      - Print text`);
+          break;
+
+        case 'scan':
+          if (args) {
+            targetInput.value = args;
+            await runScan(args);
+          } else {
+            addTerm(`<span class="text-danger">Usage: scan &lt;target&gt;</span>`);
+          }
+          break;
+
+        case 'status':
+          addTerm(`<span class="text-info">[+]</span> API Endpoint: ${API_URL}`);
+          addTerm(`<span class="text-info">[+]</span> Mode: ${currentMode.toUpperCase()}`);
+          addTerm(`<span class="text-info">[+]</span> Local: ${IS_LOCAL ? 'YES' : 'NO'}`);
+          addTerm(`<span class="text-info">[+]</span> Auth: ${authToken ? 'Authenticated' : 'Guest'}`);
+          addTerm(`<span class="text-info">[+]</span> History: ${scanHistory.length} scans`);
+          break;
+
+        case 'history':
+          await renderHistory();
+          if (scanHistory.length === 0) {
+            addTerm(`<span class="text-muted">No scan history.</span>`);
+          } else {
+            scanHistory.slice(-10).forEach((h, i) => {
+              addTerm(`<span class="text-info">[${i+1}]</span> ${escapeData(h.target)} - ${new Date(h.created_at).toLocaleString()}`);
+            });
+          }
+          break;
+
+        case 'clear':
+        case 'cls':
+          clearTerm();
+          break;
+
+        case 'whoami':
+          addTerm(`<span class="text-success">${authToken ? 'authenticated_user' : 'guest'}</span>`);
+          break;
+
+        case 'date':
+          addTerm(`<span class="text-info">${new Date().toISOString()}</span>`);
+          break;
+
+        case 'echo':
+          addTerm(`<span class="text-white">${args}</span>`);
+          break;
+
+        default:
+          addTerm(`<span class="text-danger">Unknown command: ${command}. Type 'help' for available commands.</span>`);
+      }
+      targetInput.value = '';
+    }
+
+    // ============ SCAN ENGINE ============
+    document.getElementById('scanButton').addEventListener('click', async () => {
+      const target = targetInput.value.trim();
+      if (!target) {
+        showToast('Enter a target domain or IP', 'error');
+        return;
+      }
+      await runScan(target);
+    });
+
+    async function runScan(target) {
+      if (isScanning) return;
+      if (!authToken) { openModal(); showToast('Log in before scanning', 'error'); return; }
+      isScanning = true;
+      const btn = document.getElementById('scanButton');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SCANNING...';
+      btn.classList.add('scanning');
+
+      clearTerm();
+      addTerm(`<span class="prompt">~#</span> <span class="text-white">./reconscope --target ${target} --mode ${currentMode}</span>`);
+      const scanStartedAt = new Date().toISOString();
+      const requestEpoch = authEpoch;
+      btn.setAttribute('aria-busy', 'true');
+
+      try {
+        let result;
+        if (IS_LOCAL && currentMode === 'local') {
+          // Local mode - call backend with full tools
+          result = await callApi('/api/scan/local', 'POST', { target });
+        } else {
+          // Light mode - safe recon
+          result = await callApi('/api/scan/light', 'POST', { target });
+        }
+
+        if (requestEpoch !== authEpoch) return;
+        if (result && !result.error) {
+          result.scan_context = { started_at: scanStartedAt, received_at: new Date().toISOString(), mode: currentMode };
+          await displayScanProgress(result, target);
+          lastScanResult = result;
+          updateDashboard(result);
+          // The API persists this assessment for the authenticated account.
+          const summary = summarizeChecks(result);
+          showToast(`${summary.label}. ${result.vulnerabilities?.length || 0} findings to review.`, 'info');
+          showSection('dashboard');
+        } else {
+          throw new Error(result.message || 'Scan failed');
+        }
+      } catch (err) {
+        console.error('Scan error:', err);
+        if (requestEpoch === authEpoch) {
+          addTerm(`<span class="text-danger">Scan failed: ${escapeData(err.message)}</span>`);
+          showToast(err.message, 'error');
+        }
+      } finally {
+        btn.removeAttribute('aria-busy');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-search"></i> SCAN';
+        btn.classList.remove('scanning');
+        isScanning = false;
+      }
+    }
+
+    async function callApi(endpoint, method = 'GET', body = null) {
+      const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json' }
+      };
+      if (authToken) opts.headers['Authorization'] = `Bearer ${authToken}`;
+      if (body) opts.body = JSON.stringify(body);
+
+      try {
+        const res = await fetch(`${API_URL}${endpoint}`, opts);
+        if (!res.ok) {
+          if (res.status === 401 && opts.headers.Authorization === `Bearer ${authToken}`) logout();
+          const data = await res.json().catch(() => ({}));
+          return { error: true, status: res.status, message: typeof data.detail === 'string' ? data.detail : `Request failed (${res.status})` };
+        }
+        return await res.json();
+      } catch (e) {
+        return { error: true, message: e.message };
+      }
+    }
+
+    async function displayScanProgress(result) {
+      for (const check of getChecks(result)) {
+        addTerm(`<span class="text-info">${escapeData(check.label)}</span> <span class="text-white">${check.status}: ${escapeData(check.reason)}</span>`);
+      }
+      addTerm(`<strong>${summarizeChecks(result).label}</strong>`);
+    }
+
+    // ============ DASHBOARD UPDATE ============
+    function escapeData(value) {
+      if (typeof value === 'string') return value.replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+      if (Array.isArray(value)) return value.map(escapeData);
+      if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k,v]) => [k, escapeData(v)]));
+      return value;
+    }
+
+    function getChecks(data) {
+      if (Array.isArray(data.checks) && data.checks.length === 5) return data.checks.map(check => ({ ...check, status: check.status.charAt(0).toUpperCase() + check.status.slice(1) }));
+      const keys = [['whois', 'WHOIS'], ['dns', 'DNS'], ['ssl', 'TLS'], ['headers', 'HTTP headers'], ['tech', 'Technologies']];
+      return keys.map(([key, label]) => {
+        const value = key === 'tech' ? data.technologies : data[key];
+        let status = 'Inconclusive', reason = 'No usable evidence returned.';
+        const techError = key === 'tech' && Array.isArray(value) && value.find(t => typeof t === 'string' && /^Error:/i.test(t));
+        if (value?.error || techError) {
+          status = value?.certificate_error ? 'Completed' : 'Failed';
+          reason = value?.error || techError;
+        } else if (key === 'whois' && value && Object.entries(value).some(([k,v]) => k !== 'domain_name' && v && (!Array.isArray(v) || v.length))) {
+          status = 'Completed'; reason = 'Registration data received.';
+        } else if (key === 'dns' && value && Object.values(value).some(v => Array.isArray(v) && v.length)) {
+          status = 'Completed'; reason = 'DNS records received.';
+        } else if (key === 'ssl' && value?.valid === true) {
+          status = 'Completed'; reason = 'Certificate validated for this connection.';
+        } else if (key === 'headers' && Number.isInteger(value?.status_code)) {
+          status = 'Completed'; reason = `HTTP ${value.status_code}; headers inspected.`;
+        } else if (key === 'tech' && Array.isArray(value) && value.length) {
+          status = 'Completed'; reason = 'Heuristic matches found; review evidence.';
+        }
+        return { key, label, status, reason };
+      });
+    }
+
+    function summarizeChecks(data) {
+      const checks = getChecks(data), completed = checks.filter(c => c.status === 'Completed').length;
+      if (data.status === 'running' || data.status === 'pending') return { completed, label: data.status === 'running' ? 'Running' : 'Queued' };
+      if (data.status === 'failed') return { completed, label: 'Failed' };
+      return { completed, label: completed === checks.length ? 'Completed' : completed ? 'Completed with gaps' : checks.every(c => c.status === 'Failed') ? 'Failed' : 'Inconclusive' };
+    }
+
+    function findingEvidence(finding, data) {
+      if (finding.evidence) return typeof finding.evidence === 'string' ? finding.evidence : JSON.stringify(finding.evidence, null, 2);
+      const title = finding.title || '';
+      if (/Information Disclosure/.test(title)) return (data.headers?.info_leaks || []).join('\n') || 'No header evidence supplied.';
+      if (/HSTS|Missing /.test(title)) return JSON.stringify({ missing_headers: data.headers?.missing || [], hsts_observations: data.headers?.hsts_issues || [], response_headers: data.headers?.raw || {} }, null, 2);
+      if (/SSL|TLS|Certificate/.test(title)) return JSON.stringify(data.ssl || {}, null, 2);
+      if (/WordPress|PHP|jQuery/i.test(title)) return (data.technologies || []).join('\n') || 'No technology evidence supplied.';
+      return 'No supporting evidence was supplied by the analyzer.';
+    }
+
+    function findingsMarkup(data) {
+      const order = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
+      const findings = [...(data.vulnerabilities || [])].sort((a,b) => (order[a.severity] ?? 5) - (order[b.severity] ?? 5));
+      if (!findings.length) return '<p class="empty-state">No findings were generated. Check collection status below; this does not establish that the target is secure.</p>';
+      return findings.map(finding => {
+        const severity = Object.hasOwn(order, finding.severity) ? finding.severity : 'info';
+        return `<details class="finding"><summary><span class="check-badge severity-${severity}">${severity.toUpperCase()}</span>${escapeData(finding.title || 'Untitled observation')}</summary>
+          <div class="finding-body"><h4>What was observed</h4><p>${escapeData(finding.description || 'No description supplied.')}</p>
+          ${finding.category ? `<h4>Assessment</h4><p>${escapeData(finding.category)} · Confidence: ${escapeData(finding.confidence || 'unrated')} · ${escapeData(finding.verification || 'requires review')}</p>` : ''}
+          ${finding.impact ? `<h4>Potential impact</h4><p>${escapeData(finding.impact)}</p>` : ''}
+          <h4>Supporting evidence</h4><pre>${escapeData(findingEvidence(finding, data))}</pre>
+          <h4>Suggested fix</h4><p>${escapeData(finding.solution || 'Review this observation in the context of your application.')}</p>
+          ${finding.cve_id ? `<h4>Reference</h4><p>${escapeData(finding.cve_id)}</p>` : ''}</div></details>`;
+      }).join('');
+    }
+
+    function updateDashboard(raw) {
+      const data = escapeData(raw), summary = summarizeChecks(raw);
+      document.getElementById('scanTarget').textContent = raw.target || 'No target scanned';
+      const context = raw.scan_context;
+      document.getElementById('scanTime').textContent = raw.created_at ? `Started ${new Date(raw.created_at).toLocaleString()} · Completed ${raw.completed_at ? new Date(raw.completed_at).toLocaleString() : 'not recorded'}` : context ? `Started ${new Date(context.started_at).toLocaleString()} · Results received ${new Date(context.received_at).toLocaleString()}` : 'Scan time unavailable';
+      const status = document.getElementById('scanStatus');
+      status.textContent = raw.target ? summary.label : 'Not started';
+      status.dataset.state = summary.completed === 5 ? 'completed' : summary.label === 'Failed' ? 'failed' : 'inconclusive';
+      document.getElementById('scanCoverage').textContent = `${summary.completed} of 5 checks returned evidence. Completed describes collection, not a clean security assessment.`;
+      const counts = {low: 0, medium: 0, high: 0, critical: 0};
+      (raw.vulnerabilities || []).forEach(v => { if (Object.hasOwn(counts, v.severity)) counts[v.severity]++; });
+      Object.entries(counts).forEach(([key, count]) => document.getElementById(key + 'Count').textContent = count);
+      document.getElementById('infoCount').textContent = `${(raw.vulnerabilities || []).filter(v => v.severity === 'info').length} informational observations`;
+      document.getElementById('findingsList').innerHTML = raw.target ? findingsMarkup(raw) : '<p class="empty-state">No scan results yet.</p>';
+      const row = (label, value) => `<div class="whois-item"><span>${label}</span><span>${value ?? 'Not available'}</span></div>`;
+      for (const check of getChecks(raw)) {
+        const badge = document.getElementById(check.key + 'Status');
+        badge.textContent = check.status; badge.dataset.state = check.status.toLowerCase();
+        document.getElementById(check.key + 'List').innerHTML = `<p class="text-muted">${escapeData(check.reason)}</p>`;
+      }
+      if (data.whois && !data.whois.error) document.getElementById('whoisList').innerHTML += row('Source', data.whois.source || 'WHOIS') + row('Domain', data.whois.domain_name) + row('Registrar', data.whois.registrar) + row('Created', data.whois.creation_date) + row('Expires', data.whois.expiration_date) + row('Nameservers', (Array.isArray(data.whois.name_servers) ? data.whois.name_servers.join(', ') : data.whois.name_servers) || 'Not available');
+      if (data.dns) document.getElementById('dnsList').innerHTML += ['a','aaaa','mx','ns','txt','cname','soa'].filter(key => data.dns[key]?.length).map(key => row(key.toUpperCase(), data.dns[key].join(', '))).join('');
+      if (data.ssl) {
+        const tls = data.ssl;
+        const verified = tls.valid === true ? '<span class="ssl-good">Validated</span>' : tls.certificate_error ? '<span class="ssl-bad">Validation failed</span>' : 'Unable to assess';
+        document.getElementById('sslList').innerHTML += row('Certificate', verified) + row('Issuer', tls.issuer) + row('Negotiated TLS', tls.tls_version) + row('Negotiated cipher', tls.cipher) + row('Days until expiry', tls.expiry_days) + '<p class="text-muted">This connection does not enumerate every supported TLS version or cipher.</p>';
+      }
+      if (data.headers && !data.headers.error) document.getElementById('headersList').innerHTML += (data.headers.present || []).map(h => row(h, 'Present · policy not validated')).join('') + (data.headers.missing || []).map(h => row(h, '<span class="ssl-warn">Missing</span>')).join('');
+      if (Array.isArray(data.technologies) && !data.technologies.some(t => /^Error:/i.test(t))) document.getElementById('techList').innerHTML += data.technologies.map(t => `<span class="tech-tag">${t}</span>`).join('');
+    }
+
+    // ============ HISTORY ============
+    async function renderHistory() {
+      const el = document.getElementById('historyList');
+      if (!authToken) { el.textContent = 'Log in to view your saved assessments.'; return; }
+      const epoch = authEpoch;
+      el.textContent = 'Loading saved assessments…';
+      const history = await callApi('/api/scan/history');
+      if (epoch !== authEpoch) return;
+      if (history.error) { el.textContent = history.message || 'History could not be loaded.'; return; }
+      scanHistory = history;
+      el.replaceChildren();
+      if (!history.length) { el.textContent = 'No saved assessments yet. Run your first scan.'; return; }
+      history.forEach(scan => {
+        const button = document.createElement('button');
+        button.className = 'history-open';
+        button.textContent = `${scan.target} · ${scan.status} · ${scan.finding_count} findings · ${new Date(scan.created_at).toLocaleString()}`;
+        button.addEventListener('click', () => openSavedReport(scan.id));
+        el.appendChild(button);
+      });
+    }
+
+    async function openSavedReport(id) {
+      const epoch = authEpoch;
+      const report = await callApi('/api/scan/' + encodeURIComponent(id));
+      if (epoch !== authEpoch) return;
+      if (report.error) { showToast(report.message || 'Report could not be loaded', 'error'); return; }
+      lastScanResult = report;
+      updateDashboard(report);
+      showSection('reports');
+    }
+
+    // ============ REPORTS ============
+    function renderReports() {
+      const el = document.getElementById('reportsList');
+      if (!lastScanResult) {
+        el.innerHTML = '<p class="text-muted" style="font-size: 13px;">No reports generated yet. Complete a scan to generate a report.</p>';
+        return;
+      }
+      const report = escapeData(lastScanResult);
+      el.innerHTML = `<h2>Report: ${report.target}</h2><p class="text-muted">${summarizeChecks(lastScanResult).label} · Completed/received: ${report.completed_at || report.scan_context?.received_at || 'Unavailable'}</p>
+        <p class="coverage-note">${report.analysis_version ? `Analysis policy ${report.analysis_version}` : 'Legacy report: earlier analysis policy'} · ${report.mode || 'light'} mode. ${report.score_note || 'Scores reflect the analyzer used at scan time.'}</p>
+        <ul>${getChecks(lastScanResult).map(check => `<li>${escapeData(check.label)}: ${escapeData(check.status)} — ${escapeData(check.reason)}</li>`).join('')}</ul>
+        <button class="auth-switch" onclick="showSection('dashboard')">View collected data</button>
+        ${findingsMarkup(lastScanResult)}<button class="btn-neon" onclick="downloadReport()">Download JSON</button>`;
+    }
+
+    function downloadReport() {
+      if (!lastScanResult) return;
+      const blob = new Blob([JSON.stringify(lastScanResult, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reconscope-report-${lastScanResult.target}-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Report downloaded', 'success');
+    }
+
+    // Validate restored credentials before showing account-owned results.
+    if (authToken) {
+      const restoreEpoch = authEpoch;
+      callApi('/api/auth/me').then(account => {
+        if (restoreEpoch !== authEpoch) return;
+        if (!account.error) document.getElementById('loginBtn').setAttribute('aria-label', `Log out ${account.username}`);
+      });
+    }
+
+    // ============ INIT ============
+    console.log('%c🤖 ReconScope Ready', 'color: #00ff41; font-size: 16px; font-family: Orbitron;');
+    console.log('%c⚠️ Only scan authorized targets!', 'color: #ff2d55; font-size: 12px;');
+  </script>
+</body>
+</html>
